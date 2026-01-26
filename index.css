@@ -1,0 +1,66 @@
+#lexius-textarea {
+  position: absolute;
+  border: none;
+  inset: 0;
+  padding: 10px;
+  font-family: monospace;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  border: 1px solid #ccc;
+  resize: none;
+  overflow: auto; /* 👈 ONLY THIS SCROLLS */
+  z-index: 1;
+}
+#lexius-textarea:focus {
+  outline: none;
+}
+
+#lexius-highlighted {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 10px;
+  pointer-events: none;
+  overflow: hidden; /* 👈 IMPORTANT */
+  z-index: 2;
+  white-space: pre;
+}
+
+#lexius-caret {
+  position: absolute;
+  width: 2px !important;              /* 👈 thickness */
+  background: #0000;     /* caret color */
+  height: 14px !important;
+  pointer-events: none;
+  z-index: 3;
+  top: 12px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+#lexius-textarea::selection {
+    color: transparent;
+    background-color: rgb(79, 79, 249);
+}
+
+#lexius-textarea,
+#lexius-highlighted {
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  tab-size: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+  #lexius-caret {
+    background: #fff0; /* caret color */
+  }
+  #lexius-highlighted {
+    color: #fff;
+  }
+}
