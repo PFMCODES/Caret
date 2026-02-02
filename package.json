@@ -1,10 +1,10 @@
 {
-  "name": "caret",
-  "version": "0.1.0",
+  "name": "@pfmcodes/caret",
+  "version": "0.1.2",
   "description": "The official code editor engine for lexius",
   "type": "module",
   "main": "./index.cjs",
-  "types": "./types/index.d.ts",
+  "types": "./types/types.d.ts",
   "exports": {
     ".": {
       "import": "./esm/index.js",

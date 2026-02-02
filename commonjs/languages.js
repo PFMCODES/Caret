@@ -1,22 +1,22 @@
-import javascript from "../highlight.js/es/languages/javascript.js";
-import xml from "../highlight.js/es/languages/xml.js";
-import css from "../highlight.js/es/languages/css.js";
-import python from "../highlight.js/es/languages/python.js";
-import java from "../highlight.js/es/languages/java.js";
-import csharp from "../highlight.js/es/languages/csharp.js";
-import cpp from "../highlight.js/es/languages/cpp.js";
-import ruby from "../highlight.js/es/languages/ruby.js";
-import php from "../highlight.js/es/languages/php.js";
-import go from "../highlight.js/es/languages/go.js";
-import c from "../highlight.js/es/languages/c.js";
-import rust from "../highlight.js/es/languages/rust.js";
-import kotlin from "../highlight.js/es/languages/kotlin.js";
-import swift from "../highlight.js/es/languages/swift.js";
-import typescript from "../highlight.js/es/languages/typescript.js";
-import json from "../highlight.js/es/languages/json.js";
-import bash from "../highlight.js/es/languages/bash.js";
-import plaintext from "../highlight.js/es/languages/plaintext.js";
-import hljs from "../highlight.js/es/core.js";
+const javascript = require("../highlight.js/es/languages/javascript.js");
+const xml = require("../highlight.js/es/languages/xml.js");
+const css = require("../highlight.js/es/languages/css.js");
+const python = require("../highlight.js/es/languages/python.js");
+const java = require("../highlight.js/es/languages/java.js");
+const csharp = require("../highlight.js/es/languages/csharp.js");
+const cpp = require("../highlight.js/es/languages/cpp.js");
+const ruby = require("../highlight.js/es/languages/ruby.js");
+const php = require("../highlight.js/es/languages/php.js");
+const go = require("../highlight.js/es/languages/go.js");
+const c = require("../highlight.js/es/languages/c.js");
+const rust = require("../highlight.js/es/languages/rust.js");
+const kotlin = require("../highlight.js/es/languages/kotlin.js");
+const swift = require("../highlight.js/es/languages/swift.js");
+const typescript = require("../highlight.js/es/languages/typescript.js");
+const json = require("../highlight.js/es/languages/json.js");
+const bash = require("../highlight.js/es/languages/bash.js");
+const plaintext = require("../highlight.js/es/languages/plaintext.js");
+const hljs = require("../highlight.js/es/core.js");
 
 let registeredLanguages = [];
 
@@ -83,7 +83,7 @@ const languages = {
     hljs
 }
 
-export default languages;
+module.exports = languages;
 
 /* 
 

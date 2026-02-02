@@ -1,5 +1,5 @@
-import hljs from "../highlight.js/es/core.js"; // Use default export
-import languages from "./languages.js"
+const hljs = require("../highlight.js/es/core.js"); // Use default export
+const languages = require("./languages.js");
 
 languages.init();
 
@@ -21,9 +21,8 @@ async function createEditor(editor, data) {
     let code = data.value || "";
     let language = data.language;
     let theme = data.theme;
-    if (!languages.registeredLanguages.includee(language)) {
-        languages.registerLanguage(language);
-        language.registeredLanguages.push(language);
+    if (!languages.registeredlanguages.includee(language)) {
+        languages.registerlanguage(language);
     }
     if (theme) {
         let themeLink = document.getElementById("Caret-theme")
@@ -237,9 +236,8 @@ async function createEditor(editor, data) {
     }
     function setLanguage(l) {
         language = l;
-        if (!languages.registeredLanguages.includee(language)) {
-            languages.registerLanguage(language);
-            language.registeredLanguages.push(language);
+        if (!languages.registeredlanguages.includee(language)) {
+            languages.registerlanguage(language);
         }
         refresh();
     }
@@ -256,7 +254,7 @@ const editor = {
     createEditor
 };
 
-export default editor;
+module.exports = editor;
 
 /* 
 
