@@ -1,5 +1,5 @@
 import hljs from "../highlight.js/es/core.js"; // Use default export
-import languages from "./languages.js"
+import languages from "./languages.js";
 
 languages.init();
 
@@ -18,12 +18,14 @@ async function createEditor(editor, data) {
     highlighted.id = "Caret-highlighted";
     caret.id = "Caret-caret";
     lineCounter.id = "Caret-lineCounter";
+    editor1.style.backgroundColor = isDark ? "#222" : "#fff";
     let code = data.value || "";
     let language = data.language;
     let theme = data.theme;
-    if (!languages.registeredLanguages.includee(language)) {
-        languages.registerLanguage(language);
-        language.registeredLanguages.push(language);
+    if (!languages.registeredLanguages.includes(language)) {
+        const mod = await import(`../highlight.js/es/languages/${language}.js`);
+        languages.registerLanguage(language, mod.default);
+        languages.registeredLanguages.push(language);
     }
     if (theme) {
         let themeLink = document.getElementById("Caret-theme")
@@ -235,12 +237,16 @@ async function createEditor(editor, data) {
         editor1.value = i;
         refresh();
     }
-    function setLanguage(l) {
-        language = l;
-        if (!languages.registeredLanguages.includee(language)) {
-            languages.registerLanguage(language);
-            language.registeredLanguages.push(language);
+    async function setLanguage(l) {
+        if (!languages.registeredLanguages.includes(l)) {
+            if (l === "html" || l === "svg") {
+                language = "xml";
+                l = "xml";
+            }
+            const mod = await import(`../highlight.js/es/languages/${l}.js`);
+            
         }
+        language = l;
         refresh();
     }
     return {
@@ -270,5 +276,4 @@ createEditor: creates the main editor, using html Elements like, textarea and et
                 updateLineNumbers: just add new line numbers
                 getFontMetrics: returns back the font's metrics like height
                 updateFontMetrics: update the fontMetrics
-
 */
