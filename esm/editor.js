@@ -1,4 +1,4 @@
-import hljs from "../highlight.js/es/core.js"; // Use default export
+import hljs from "https://esm.sh/@pfmcodes/highlight.js@1.0.0/es/core.js"; // Use default export
 import languages from "./languages.js";
 
 languages.init();
@@ -18,12 +18,17 @@ async function createEditor(editor, data) {
     highlighted.id = "Caret-highlighted";
     caret.id = "Caret-caret";
     lineCounter.id = "Caret-lineCounter";
+    editor1.className = 'dark';
+    highlighted.className = 'dark';
+    caret.className = 'dark';
+    lineCounter.className = 'dark';
+    editor.classList.add("");
     editor1.style.backgroundColor = isDark ? "#222" : "#fff";
     let code = data.value || "";
     let language = data.language;
     let theme = data.theme;
     if (!languages.registeredLanguages.includes(language)) {
-        const mod = await import(`../highlight.js/es/languages/${language}.js`);
+        const mod = await import(`https://esm.sh/@pfmcodes/highlight.js@1.0.0/es/languages/${language}.js`);
         languages.registerLanguage(language, mod.default);
         languages.registeredLanguages.push(language);
     }
@@ -139,6 +144,7 @@ async function createEditor(editor, data) {
         lineCounter.innerHTML = html;
     }
 
+    highlighted.style.paddingTop = "12px"
 
     function getFontMetrics() {
         const metrics = measureCtx.measureText("Mg");
@@ -187,7 +193,7 @@ async function createEditor(editor, data) {
             (lineHeight - ascent) +
             "px";
 
-        caret.style.height = `${lineHeight}px`;
+        caret.style.height = `${lineHeight - 5}px`;
     }
     const input = () => {
         caret.style.opacity = "1";
@@ -243,7 +249,7 @@ async function createEditor(editor, data) {
                 language = "xml";
                 l = "xml";
             }
-            const mod = await import(`../highlight.js/es/languages/${l}.js`);
+            const mod = await import(`https://esm.sh/@pfmcodes/highlight.js@1.0.0/es/languages/${l}.js`);
             
         }
         language = l;

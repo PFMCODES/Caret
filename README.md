@@ -21,6 +21,7 @@ A lightweight, feature-rich code editor with real-time syntax highlighting and c
 
 ## 📋 Table of Contents
 
+- [What's new](#What's-New?)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Project Structure](#project-structure)
@@ -28,6 +29,10 @@ A lightweight, feature-rich code editor with real-time syntax highlighting and c
 - [Customization](#customization)
 - [Contributing](#contributing)
 - [License](#license)
+
+## What's-New?
+
+### New fresh package directory, now the heavy work is done in the cloud while minimizing package size to just a few Kilo Bytes.
 
 ## 🚀 Installation
 

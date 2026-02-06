@@ -6,11 +6,11 @@
   font-family: monospace;
   background: transparent;
   color: transparent;
-  caret-color: transparent;
+  caret-color: #fff;
   border: 1px solid #ccc;
-  resize: none;
-  overflow: auto; /* 👈 ONLY THIS SCROLLS */
+  overflow: scroll; /* 👈 ONLY THIS SCROLLS */
   z-index: 1;
+  width: 100%;
 }
 #Caret-textarea:focus {
   outline: none;
@@ -32,6 +32,7 @@
   position: absolute;
   width: 2px !important;              /* 👈 thickness */
   opacity: 0;
+  display: none;
   pointer-events: none;
   z-index: 3;
   top: 12px;
@@ -79,17 +80,19 @@
   flex-direction: column;
   height: fit-content;
   justify-content: space-around;
+  z-index: 10;
 }
 
 @keyframes blink {
   50% { opacity: 0; }
 }
 
-@media (prefers-color-scheme: dark) {
-  #Caret-caret {
-    background: #fff0; /* caret color */
-  }
-  #Caret-highlighted {
-    color: #fff;
-  }
+#Caret-caret.dark {
+  background: #fff0; /* caret color */
+}
+#Caret-highlighted.dark {
+  color: #fff;
+}
+#Caret-lineCounter.dark {
+  color: #fff;
 }

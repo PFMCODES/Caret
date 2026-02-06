@@ -1,4 +1,4 @@
-const hljs = require("../highlight.js/es/core.js"); // Use default export
+const hljs = require("https://esm.sh/@pfmcodes/highlight.js@1.0.0/es/core.js"); // Use default export
 const languages = require("./languages.js");
 
 languages.init();
@@ -23,7 +23,7 @@ async function createEditor(editor, data) {
     let language = data.language;
     let theme = data.theme;
     if (!languages.registeredLanguages.includes(language)) {
-        const mod = await import(`../highlight.js/es/languages/${language}.js`);
+        const mod = await import(`https://esm.sh/@pfmcodes/highlight.js@1.0.0/es/languages/${language}.js`);
         languages.registerLanguage(language, mod.default);
         languages.registeredLanguages.push(language);
     }
@@ -243,7 +243,7 @@ async function createEditor(editor, data) {
                 language = "xml";
                 l = "xml";
             }
-            const mod = await import(`../highlight.js/es/languages/${l}.js`);
+            const mod = await import(`https://esm.sh/@pfmcodes/highlight.js@1.0.0/es/languages/${l}.js`);
             
         }
         language = l;
