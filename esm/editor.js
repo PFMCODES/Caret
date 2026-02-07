@@ -22,7 +22,6 @@ async function createEditor(editor, data) {
     highlighted.className = 'dark';
     caret.className = 'dark';
     lineCounter.className = 'dark';
-    editor.classList.add("");
     editor1.style.backgroundColor = isDark ? "#222" : "#fff";
     let code = data.value || "";
     let language = data.language;
@@ -38,10 +37,10 @@ async function createEditor(editor, data) {
             const link = document.createElement("link");
             link.rel = "stylesheet";
             link.id = "Caret-theme";
-            link.href = `./highlight.js/styles/${theme}.css`;
+            link.href = `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/${theme}.css`;
             document.head.appendChild(link);
         } else {
-            themeLink.href = `./highlight.js/styles/${theme}.css`;
+            themeLink.href = `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/${theme}.css`;
         }
     } else {
         let themeLink  = document.getElementById("Caret-theme");
@@ -49,7 +48,7 @@ async function createEditor(editor, data) {
             const link = document.createElement("link");
             link.rel = "stylesheet";
             link.id = "Caret-theme";
-            link.href = `./highlight.js/styles/hybrid.css`;
+            link.href = `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/hybrid.css`;
             document.head.appendChild(link);
         } else {
             themeLink.href = `./highlight.js/styles/hybrid.css`;

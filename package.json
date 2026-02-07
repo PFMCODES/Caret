@@ -1,16 +1,18 @@
 {
   "name": "@pfmcodes/caret",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "The official code editor engine for lexius",
   "type": "module",
-  "main": "./index.cjs",
-  "types": "./types/types.d.ts",
+  "main": "./esm/index.js",
+  "types": "./types/index.d.ts",
   "exports": {
     ".": {
+      "types": "./types/index.d.ts",
       "import": "./esm/index.js",
-      "require": "./commonjs/index.js",
-      "types": "./types/index.d.ts"
-    }
+      "require": "./commonjs/index.js"
+    },
+    "./commonjs": "./commonjs/index.js",
+    "./esm": "./esm/index.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +26,7 @@
     "syntax-highlighting",
     "language-server",
     "typescript",
+    "python",
     "javascript",
     "ide",
     "browser-editor",

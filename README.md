@@ -73,7 +73,7 @@ pnpm add @pfmcodes/caret
   <script type="module">
     import editor from './node_modules/@pfmcodes/caret/esm/index.js';
     
-    const instance = await editor.createEditor(
+    const instance = await editor.editor.createEditor(
       document.getElementById('editor'),
       {
         value: 'console.log("Hello, World!");',
@@ -92,7 +92,7 @@ pnpm add @pfmcodes/caret
 import editor from '@pfmcodes/caret';
 
 // Create editor instance
-const editorInstance = await editor.createEditor(
+const editorInstance = await editor.editor.createEditor(
   document.getElementById('editor'),
   {
     value: '',           // Initial code
@@ -121,9 +121,9 @@ caret/
 ### JavaScript Editor
 
 ```javascript
-import editor from '@pfmcodes/caret';
+import editor from '@pfmcodes/caret'; // auto link to commonjs version
 
-const jsEditor = await editor.createEditor(
+const jsEditor = await editor.editor.createEditor(
   document.getElementById('js-editor'),
   {
     value: `function greet(name) {

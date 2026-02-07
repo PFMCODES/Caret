@@ -1,6 +1,6 @@
 function setTheme(name) {
   const link = document.getElementById("Caret-theme");
-  link.href = `./highlight.js/styles/${name}.css`;
+  link.href = `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/${name}.css`;
 }
 
 function removeTheme() {

@@ -18,6 +18,10 @@ async function createEditor(editor, data) {
     highlighted.id = "Caret-highlighted";
     caret.id = "Caret-caret";
     lineCounter.id = "Caret-lineCounter";
+    editor1.className = 'dark';
+    highlighted.className = 'dark';
+    caret.className = 'dark';
+    lineCounter.className = 'dark';
     editor1.style.backgroundColor = isDark ? "#222" : "#fff";
     let code = data.value || "";
     let language = data.language;
@@ -33,10 +37,10 @@ async function createEditor(editor, data) {
             const link = document.createElement("link");
             link.rel = "stylesheet";
             link.id = "Caret-theme";
-            link.href = `./highlight.js/styles/${theme}.css`;
+            link.href = `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/${theme}.css`;
             document.head.appendChild(link);
         } else {
-            themeLink.href = `./highlight.js/styles/${theme}.css`;
+            themeLink.href = `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/${theme}.css`;
         }
     } else {
         let themeLink  = document.getElementById("Caret-theme");
@@ -44,7 +48,7 @@ async function createEditor(editor, data) {
             const link = document.createElement("link");
             link.rel = "stylesheet";
             link.id = "Caret-theme";
-            link.href = `./highlight.js/styles/hybrid.css`;
+            link.href = `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/hybrid.css`;
             document.head.appendChild(link);
         } else {
             themeLink.href = `./highlight.js/styles/hybrid.css`;
@@ -139,6 +143,7 @@ async function createEditor(editor, data) {
         lineCounter.innerHTML = html;
     }
 
+    highlighted.style.paddingTop = "12px"
 
     function getFontMetrics() {
         const metrics = measureCtx.measureText("Mg");
@@ -187,7 +192,7 @@ async function createEditor(editor, data) {
             (lineHeight - ascent) +
             "px";
 
-        caret.style.height = `${lineHeight}px`;
+        caret.style.height = `${lineHeight - 5}px`;
     }
     const input = () => {
         caret.style.opacity = "1";
