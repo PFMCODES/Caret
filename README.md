@@ -2,8 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-4000ff.svg)](https://opensource.org/licenses/MIT)
 [![JavaScript](https://img.shields.io/badge/JavaScript-63.7%25-f6fa03)](https://github.com/PFMCODES/lexius-edior)
+[![JavaScript](https://img.shields.io/badge/TypeScript-32.3%25-0244f7)](https://github.com/PFMCODES/lexius-edior)
 [![CSS](https://img.shields.io/badge/CSS-4.0%25-2e7ad1)](https://github.com/pfmcodes/lexius-editor)
-[![CSS](https://img.shields.io/badge/CSS-32.3%#0244f7)](https://github.com/pfmcodes/lexius-editor)
 
 A lightweight, feature-rich code editor with real-time syntax highlighting and custom caret rendering. Built with vanilla JavaScript and powered by Highlight.js, caret delivers a smooth coding experience with professional-grade features.
 
@@ -32,7 +32,7 @@ A lightweight, feature-rich code editor with real-time syntax highlighting and c
 
 ## What's-New?
 
-### New fresh package directory, now the heavy work is done in the cloud while minimizing package size to just a few Kilo Bytes.
+### New fresh package directory, now the heavy work is done in the cloud while minimizing package size to just a few Kilo Bytes(~60.8 kb).
 
 ## 🚀 Installation
 
