@@ -33,8 +33,8 @@ A lightweight, feature-rich code editor with real-time syntax highlighting and c
 
 ## What's-New?
 
-### The editor has been optimized like crazy, the editor used to lag at 500 lines not it does not lag until 10k+ lines(x20 perfomance increase)
-### for more info about the perfomace check out [this.](#performance-notes)
+### The editor has been optimized like crazy, the editor used to lag at 500 lines not it does not lag until 10k+ lines(x20 performance increase)
+### for more info about the perfomace check out [this](#performance-notes) and [this](#performance).
 
 ##  Installation
 
@@ -91,7 +91,7 @@ pnpm add @pfmcodes/caret
 ### ES Module Import
 
 ```javascript
-import editor from '@pfmcodes/caret';
+import editor from './node_modules/@pfmcodes/caret/esm/index.js';
 
 // Create editor instance
 const editorInstance = await editor.editor.createEditor(
@@ -123,7 +123,7 @@ caret/
 ### JavaScript Editor
 
 ```javascript
-import editor from '@pfmcodes/caret'; // auto link to commonjs version
+import editor from './node_modules/@pfmcodes/caret/esm/index.js'; // auto link to commonjs version
 
 const jsEditor = await editor.editor.createEditor(
   document.getElementById('js-editor'),
@@ -480,7 +480,7 @@ The editor synchronizes all layers during:
 - **Real-time Highlighting**: Uses Highlight.js for fast, accurate syntax highlighting
 - **Canvas Measurement**: Employs HTML5 Canvas API for precise text width calculations
 - **Event Optimization**: Efficiently updates only what's necessary on each interaction
-- **Heavy Optimization**: previous version(0.1.6) used to handle 500 lines before lagging, with new caret@0.2.0, there's almost 20 times perfomace increase now it can handle 10K+ lines smoothly before lagging(better results in optimized browsers like firfox)
+- **Heavy Optimization**: v0.1.5 used to handle 500 lines before lagging, with new caret@0.2.0 and onwards, there's almost 20 times performance increase now it can handle 10K+ lines smoothly before lagging(better results in optimized browsers like firefox)
 
 ### Browser Support
 
