@@ -33,6 +33,9 @@ A lightweight, feature-rich code editor with real-time syntax highlighting and c
 
 ## What's-New?
 
+### v0.2.7
+- another cleanup but this time, with file optimizations and updated comments at the end of each containing short summaries of each function and variables(only some important variables)
+
 ### v0.2.6
 
 - CommonJs support has been removed to reduce package size

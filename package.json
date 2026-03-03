@@ -1,6 +1,6 @@
 {
   "name": "@pfmcodes/caret",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "The official code editor engine for lexius",
   "type": "module",
   "main": "./index.js",

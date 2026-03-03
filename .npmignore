@@ -6,3 +6,5 @@ index.html
 .env
 package-lock.json
 .npmignore
+LICENSE
+ignore-files.txt

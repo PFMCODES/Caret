@@ -1,5 +1,6 @@
+// @ts-ignore
 import hljs from "https://esm.sh/@pfmcodes/highlight.js@1.0.0/es/core.js"; // Use default export
-import languages from "./languages.ts";
+import languages from "./langauges.ts";
 
 languages.init();
 
@@ -49,6 +50,7 @@ async function createEditor(editor: HTMLElement, data: any) {
             link.href = `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/${theme}.css`;
             document.head.appendChild(link);
         } else {
+            // @ts-ignore
             themeLink.href = `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/${theme}.css`;
         }
     } else {
@@ -60,6 +62,7 @@ async function createEditor(editor: HTMLElement, data: any) {
             link.href = `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/hybrid.css`;
             document.head.appendChild(link);
         } else {
+            // @ts-ignore
             themeLink.href = `./highlight.js/styles/hybrid.css`;
         }
     }
@@ -455,16 +458,24 @@ const editor = {
 
 export default editor;
 
-/* 
+/*
+createEditor(editor, data): creates the main editor using HTML elements like textarea, pre, div etc.
+    Returns an object with the following methods:
+        getValue() -> returns the current value from the editor
+        setValue(val) -> sets a value to the editor
+        focus() -> focuses the editor
+        setLanguage(lang) -> changes the syntax highlighting language
+        destroy() -> destroys the editor and removes all event listeners
+        onDidChangeModelContent(fn) -> fires a callback whenever the editor content changes
 
-createEditor: creates the main editor, using html Elements like, textarea and etc.
-                refresh: refreshs the editor
-                getValue: return the current value from the editor
-                setValue: sets a certain value to the editor's value
-                focus: focusses the editor
-                destroy: destroys and removeEventListeners
-                updateCaret: updates the caret positon, height and other metrics using math
-                updateLineNumbers: just add new line numbers
-                getFontMetrics: returns back the font's metrics like height
-                updateFontMetrics: update the fontMetrics
+Internal functions:
+        _render(code, language, editor) -> virtual renderer, only highlights visible lines for performance
+        wrapCode(code, wrapAt) -> wraps long lines at word boundaries
+        getWrapMap(code, wrapAt) -> returns an array mapping each line to its visual line count
+        escapeHtml(str) -> escapes HTML special characters
+        updateCaret() -> updates the caret position using canvas font metrics
+        updateLineNumbers() -> re-renders line numbers, accounting for wrapped lines
+        updateFontMetrics() -> updates the canvas font to match the textarea's computed style
+        getFontMetrics() -> returns ascent, descent and height of the current font
+        getVisualRow(text, wrapAt) -> returns which visual row and remaining text the caret is on
 */

@@ -3,16 +3,12 @@ function setTheme(name: string) {
   link.href = `./highlight.js/styles/${name}.css`;
 }
 
-function removeTheme() {
-  const link = document.getElementById("Caret-theme") as HTMLLinkElement;
-    if (link && link.parentNode) {
-        link.parentNode.removeChild(link);
-    }
-}
-
 const theme = {
-    removeTheme,
     setTheme
 }
 
 export default theme;
+
+/*
+setTheme() -> changes the current highlight.js theme
+*/
