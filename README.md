@@ -1,10 +1,10 @@
-![LOGO](https://github.com/PFMCODES/Caret/raw/main/logo.svg)
+![LOGO](https://pfmcodes.onrender.com/apps/caret/logo.svg)
 # Caret
 [![License: MIT](https://img.shields.io/badge/License-MIT-4000ff.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Downloads](https://img.shields.io/npm/dw/@pfmcodes/caret?style=flat-square)](https://npmjs.com/@pfmcodes/caret)
 [![Version](https://img.shields.io/npm/v/@pfmcodes/caret?style=flat-square)](https://npmjs.com/@pfmcodes/caret)
 
-A lightweight, fast code editor engine with real-time syntax highlighting, custom caret rendering, and a clean EditContext-based architecture. 551 lines. 26KB. 42ms load time.
+A lightweight, fast code editor engine with real-time syntax highlighting, custom caret rendering, and a clean EditContext-based architecture. 605 lines. ~30KB. ~27ms load time.
 
 ## Features
 
@@ -14,12 +14,14 @@ A lightweight, fast code editor engine with real-time syntax highlighting, custo
 - **Line Numbers** - Built-in line counter with dynamic updates
 - **Smart Indentation** - Tab/Shift+Tab for indenting and unindenting code blocks
 - **Undo/Redo** - Full undo/redo stack with cursor position restoration (Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z)
+- **Arrow Key Movement** - Full arrow key navigation with column preservation
 - **Theme Support** - Custom background, text, caret and line counter colors
 - **Lock Mode** - Read-only mode for displaying code
 - **Font Support** - Custom font loading
 - **Paste Handling** - Always pastes plain text, no rich HTML
+- **Browser Detection** - Friendly error message for unsupported browsers
 - **ES Modules** - Modern ESM architecture
-- **Lightweight** - 551 lines, 26KB total, loads in ~42ms
+- **Lightweight** - 605 lines, ~30KB total, loads in ~27ms
 
 ## Table of Contents
 
@@ -36,6 +38,16 @@ A lightweight, fast code editor engine with real-time syntax highlighting, custo
 
 ## What's New
 
+### v0.3.1 — API update, bug fixes and README changes
+- **Arrow key movement (←→↑↓)** - previously did not work, now fully functional with column preservation
+- **getCursor()** - get the cursor/caret's current position
+- **setCursor(pos)** - set cursor/caret position to a specific character offset
+- **onCursorMove(cb)** - triggers a callback when the cursor moves
+- **undo() and redo() exposed in API** - call them programmatically
+- **Enter key fix** - newline rendering fixed with zero-width space anchor
+- **Browser detection** - friendly error message for non-Chromium browsers with link to file an issue
+- **Updated JSDoc documentation**
+
 ### v0.3.0 — Complete Rewrite
 - **Ditched textarea** — rebuilt on Chrome's EditContext API
 - **No more sync issues** — single text model, no dual layer fighting
@@ -45,7 +57,6 @@ A lightweight, fast code editor engine with real-time syntax highlighting, custo
 - **setLanguage()** — switch language at runtime
 - **delete()** — clean teardown with full event listener removal
 - **onClick cursor positioning** — click anywhere to place cursor
-- **Known limitation** — EditContext requires Chrome/Chromium (Firefox support pending)
 
 ### v0.2.8
 - Bug fixes
@@ -82,6 +93,8 @@ pnpm add @pfmcodes/caret
 ```
 
 ## Quick Start
+
+![Quick Start Guide Video](https://pfmcodes.onrender.com/apps/caret/Quick%20Start.gif)
 
 ```html
 <!DOCTYPE html>
@@ -178,7 +191,7 @@ pnpm add @pfmcodes/caret
   <div id="result"></div>
 
   <script type="module">
-    import { createTextEditor } from './components/textEditor.js';
+    import Caret from '.node_modules/@pfmcodes/caret/index.js';
 
     window.language = 'javascript';
     window.currentTheme = 'tokyo-night-dark';
@@ -223,7 +236,7 @@ for i in range(25):
 </body>
 </html>`;
 
-    const editorInstance = await createTextEditor(
+    const editorInstance = await Caret.createEditor(
       document.getElementById('editor'),
       jsCode,
       'demo-editor',
@@ -251,7 +264,7 @@ for i in range(25):
         }
       }
     );
-
+    
     window.editorInstance = editorInstance;
 
     window.changeLanguage = async (lang) => {
@@ -321,18 +334,15 @@ for i in range(25):
 ```
 caret/
 ├── components/
-│   ├── textEditor.js     # Text editor(core) — EditContext, undo/redo, highlighting
+│   ├── textEditor.js     # Text editor (core) — EditContext, undo/redo, highlighting
 │   ├── caret.js          # Custom caret positioning via Range API
 │   ├── lineCounter.js    # Line number display
 │   ├── font.js           # Custom font loading
 │   └── languages.js      # Highlight.js language registration
 ├── .gitignore
 ├── .npmignore
-├── index.js              # Main file
-├── LICENSE 
-├── logo.svg
-├── package-lock.json
-├── package.json
+├── index.js              # Main entry point
+├── LICENSE
 ├── package.json
 ├── README.md
 └── utilities.js          # Shared utilities
@@ -343,12 +353,12 @@ caret/
 ### Basic Editor
 
 ```javascript
-import { createEditor } from './node_modules/@pfmcodes/caret/index.js';
+import Caret from './node_modules/@pfmcodes/caret/index.js';
 
-const editor = await createEditor(
+const editor = await Caret.createEditor(
   document.getElementById('editor'),  // parent element
   'const x = 42;',                    // initial content
-  'my-editor',                         // unique id
+  'my-editor',                        // unique id
   {
     dark: true,
     language: 'javascript',
@@ -360,9 +370,9 @@ const editor = await createEditor(
 ### Read-Only Display
 
 ```javascript
-import { createEditor } from './node_modules/@pfmcodes/caret/index.js';
+import Caret from './node_modules/@pfmcodes/caret/index.js';
 
-const editor = await createEditor(
+const editor = await Caret.createEditor(
   document.getElementById('editor'),
   code,
   'readonly-editor',
@@ -378,20 +388,19 @@ const editor = await createEditor(
 ### Multiple Instances
 
 ```javascript
-import { createEditor } from './node_modules/@pfmcodes/caret/index.js';
+import Caret from './node_modules/@pfmcodes/caret/index.js';
 
 // each editor needs a unique id
-
-const editor1 = await createEditor(el1, code1, 'editor-1', options);
-const editor2 = await createEditor(el2, code2, 'editor-2', options);
+const editor1 = await Caret.createEditor(el1, code1, 'editor-1', options);
+const editor2 = await Caret.createEditor(el2, code2, 'editor-2', options);
 ```
 
 ### Custom Theme
 
 ```javascript
-import { createEditor } from './node_modules/@pfmcodes/caret/index.js';
+import Caret from './node_modules/@pfmcodes/caret/index.js';
 
-const editor = await createEditor(
+const editor = await Caret.createEditor(
   document.getElementById('editor'),
   code,
   'editor-1',
@@ -423,9 +432,9 @@ const editor = await createEditor(
 ### Custom Font
 
 ```javascript
-import { createEditor } from './node_modules/@pfmcodes/caret/index.js';
+import Caret from './node_modules/@pfmcodes/caret/index.js';
 
-const editor = await createEditor(
+const editor = await Caret.createEditor(
   document.getElementById('editor'),
   code,
   'editor-1',
@@ -467,22 +476,38 @@ Creates a new editor instance.
 | `hlTheme` | `string` | `hybrid` | Highlight.js theme |
 | `font` | `object` | — | Custom font `{ url, name }` |
 | `theme` | `object` | — | Custom colors (see above) |
-`id` | `string/number` | — | required for proper ditinguistion |
 
 **Returns:** `Promise<EditorInstance>`
 
 ### EditorInstance Methods
 
 ```javascript
-// Get current content
+// Get current content (strips internal zero-width spaces)
 const code = editor.getValue();
 
 // Set content
 editor.setValue('console.log("hello");');
 
-// Listen for changes
+// Get current cursor position (character offset)
+const pos = editor.getCursor();
+
+// Set cursor to a specific position
+editor.setCursor(42);
+
+// Programmatically undo
+editor.undo();
+
+// Programmatically redo
+editor.redo();
+
+// Listen for content changes
 editor.onChange((text) => {
   console.log('content changed:', text);
+});
+
+// Listen for cursor movement
+editor.onCursorMove((pos) => {
+  console.log('cursor at:', pos);
 });
 
 // Check if focused
@@ -491,7 +516,7 @@ const focused = editor.isFocused();
 // Switch language
 await editor.setLanguage('python');
 
-// Destroy instance and clean up
+// Destroy instance and clean up all DOM elements and event listeners
 editor.delete();
 ```
 
@@ -504,6 +529,10 @@ editor.delete();
 | `Ctrl+Z` | Undo |
 | `Ctrl+Y` | Redo |
 | `Ctrl+Shift+Z` | Redo |
+| `←` | Move cursor left |
+| `→` | Move cursor right |
+| `↑` | Move cursor up (preserves column) |
+| `↓` | Move cursor down (preserves column) |
 
 ### Global Undo/Redo Stack
 
@@ -561,8 +590,8 @@ window.caret['redoStack.editor-1'];
 |---------|---------|
 | Chrome / Chromium | ✓ |
 | Edge | ✓ |
-| Firefox | ⨯ |
-| Safari | ⨯ |
+| Firefox | ✗ |
+| Safari | ✗ |
 
 Caret v0.3+ uses the [EditContext API](https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API) which is currently only available in Chromium-based browsers. Firefox support is tracked [here](https://github.com/mozilla/standards-positions/issues/199).
 
@@ -570,9 +599,9 @@ Caret v0.3+ uses the [EditContext API](https://developer.mozilla.org/en-US/docs/
 
 | Metric | Caret v0.3+ | Monaco | CodeMirror 6 |
 |--------|-------------|--------|--------------|
-| Bundle size | **~30KB** | ~5MB | ~400KB |
-| Load time | **~27ms** | ~2-3s | ~500ms |
-| Lines of code | **605** | ~300,000 | ~50,000 |
+| Bundle size | **~32.34KB** | ~5MB | ~400KB |
+| Load time | **~25ms** | ~2-3s | ~500ms |
+| Lines of code | **650** | ~300,000 | ~50,000 |
 | Architecture | EditContext | textarea | contenteditable |
 
 ## Speed and Size
@@ -583,34 +612,20 @@ Caret v0.3+ uses the [EditContext API](https://developer.mozilla.org/en-US/docs/
 
 | File Name | Language | Size | Path | Blank Lines | Comments | Code |
 |-----------|----------|------|------|-------------|----------|------|
-| index.js | JavaScript | 173 bytes | / | 1 | 0 | 6 |
-| utilities.js | JavaScript | 764 bytes | / | 6 | 2 | 24 |
+| index.js | JavaScript | 174 bytes | / | 1 | 0 | 6 |
+| utilities.js | JavaScript | 765 bytes | / | 6 | 2 | 24 |
 | caret.js | JavaScript | 3.04 KB | components/ | 16 | 15 | 64 |
-| font.js | JavaScript | 360 bytes | components/ | 2 | 8 | 6 |
-| languages.js | JavaScript | 3.99 KB | components/ | 7 | 7 | 88 |
+| font.js | JavaScript | 361 bytes | components/ | 2 | 8 | 6 |
+| languages.js | JavaScript | 3.98 KB | components/ | 7 | 7 | 88 |
 | lineCounter.js | JavaScript | 3.72 KB | components/ | 5 | 24 | 62 |
-| textEditor.js | JavaScript | 17.81 KB | components/ | 44 | 71 | 351 |
-| **Total** | — | **29.857KB or roughly 30KB** | — | 82 | 127 | 605 |
+| textEditor.js | JavaScript | 20.3 KB | components/ | 46 | 57 | 400 |
+| **Total** | — | **~32.34KB** | — | 83 | 113 | 650 |
 
 ### Load time on Chrome
 ![~25ms load](https://pfmcodes.onrender.com/apps/caret/chrome-speed.png)
 
 ### Load time on Edge
 ![~27ms load](https://pfmcodes.onrender.com/apps/caret/edge-speed.png)
-
-### ***TIP: after installing or cloning delete these files/directories:***
-- ***.gitignore***
-- ***.npmignore***
-- ***chrome-speed.png***
-- ***edge-speed.png***
-- ***LICENSE***
-- ***logo.svg***
-- ***package.json***
-- ***package-lock.json***
-- ***README.md***
-- ***.git***
-
-> This will reduce the package size to its orignal size
 
 ## How It Works
 
