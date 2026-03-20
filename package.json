@@ -4,16 +4,6 @@
   "description": "The official code editor engine for lexius",
   "type": "module",
   "main": "./index.js",
-  "types": "./types/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./types/index.d.ts",
-      "default": "./index.js"
-    },
-    "./editor": "./esm/index.js",
-    "./langauges": "./langauges.js",
-    "./theme": "./theme.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PFMCODES/lexius-editor.git"
@@ -38,7 +28,4 @@
     "url": "https://github.com/PFMCODES/Caret/issues"
   },
   "homepage": "https://pfmcodes.onrender.com/apps/caret/",
-  "dependencies": {
-    "@pfmcodes/caret": "^0.3.0"
-  }
 }
