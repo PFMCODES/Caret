@@ -1,6 +1,6 @@
 {
   "name": "@pfmcodes/caret",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "The official code editor engine for lexius",
   "type": "module",
   "main": "./index.js",
@@ -37,5 +37,8 @@
   "bugs": {
     "url": "https://github.com/PFMCODES/Caret/issues"
   },
-  "homepage": "https://github.com/PFMCODES/Caret#readme"
+  "homepage": "https://pfmcodes.onrender.com/apps/caret/",
+  "dependencies": {
+    "@pfmcodes/caret": "^0.3.0"
+  }
 }

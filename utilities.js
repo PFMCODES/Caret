@@ -1,7 +1,3 @@
-export function intoString(a)  {
-    return `${a}`;
-}
-
 export function isMoreThanOneChange(s1, s2) {
   const len1 = s1.length;
   const len2 = s2.length;

@@ -1,9 +1,8 @@
 ![LOGO](https://github.com/PFMCODES/Caret/raw/main/logo.svg)
 # Caret
-[![License: MIT](https://img.shields.io/badge/License-MIT-4000ff.svg)](https://opensource.org/licenses/MIT)
-[![JavaScript](https://img.shields.io/badge/JavaScript-63.7%25-f6fa03)](https://github.com/PFMCODES/Caret)
-[![TypeScript](https://img.shields.io/badge/TypeScript-32.3%25-0244f7)](https://github.com/PFMCODES/Caret)
-[![CSS](https://img.shields.io/badge/CSS-4.0%25-2e7ad1)](https://github.com/PFMCODES/Caret)
+[![License: MIT](https://img.shields.io/badge/License-MIT-4000ff.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Downloads](https://img.shields.io/npm/dw/@pfmcodes/caret?style=flat-square)](https://npmjs.com/@pfmcodes/caret)
+[![Version](https://img.shields.io/npm/v/@pfmcodes/caret?style=flat-square)](https://npmjs.com/@pfmcodes/caret)
 
 A lightweight, fast code editor engine with real-time syntax highlighting, custom caret rendering, and a clean EditContext-based architecture. 551 lines. 26KB. 42ms load time.
 
@@ -451,9 +450,9 @@ Creates a new editor instance.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `parent` | `HTMLElement` | ✅ | Container element |
-| `content` | `string` | ✅ | Initial content |
-| `options` | `object` | ✅ | Configuration |
+| `parent` | `HTMLElement` | ✓ | Container element |
+| `content` | `string` | ✓ | Initial content |
+| `options` | `object` | ✓ | Configuration |
 
 **Options:**
 
@@ -468,7 +467,7 @@ Creates a new editor instance.
 | `hlTheme` | `string` | `hybrid` | Highlight.js theme |
 | `font` | `object` | — | Custom font `{ url, name }` |
 | `theme` | `object` | — | Custom colors (see above) |
-`id` | `string/number` | — | required, 
+`id` | `string/number` | — | required for proper ditinguistion |
 
 **Returns:** `Promise<EditorInstance>`
 
@@ -560,25 +559,62 @@ window.caret['redoStack.editor-1'];
 
 | Browser | Support |
 |---------|---------|
-| Chrome / Chromium | Full support |
-| Edge | Full support |
-| Firefox | EditContext not yet supported |
-| Safari | EditContext not yet supported |
+| Chrome / Chromium | ✓ |
+| Edge | ✓ |
+| Firefox | ⨯ |
+| Safari | ⨯ |
 
-Caret v0.3.0 uses the [EditContext API](https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API) which is currently only available in Chromium-based browsers. Firefox support is tracked [here](https://bugzilla.mozilla.org/show_bug.cgi?id=1850301).
+Caret v0.3+ uses the [EditContext API](https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API) which is currently only available in Chromium-based browsers. Firefox support is tracked [here](https://github.com/mozilla/standards-positions/issues/199).
 
 ## Performance
 
-| Metric | Caret v0.3.0 | Monaco | CodeMirror 6 |
+| Metric | Caret v0.3+ | Monaco | CodeMirror 6 |
 |--------|-------------|--------|--------------|
-| Bundle size | **26KB** | ~5MB | ~400KB |
-| Load time | **~42ms** | ~2-3s | ~500ms |
-| Lines of code | **551** | ~300,000 | ~50,000 |
+| Bundle size | **~30KB** | ~5MB | ~400KB |
+| Load time | **~27ms** | ~2-3s | ~500ms |
+| Lines of code | **605** | ~300,000 | ~50,000 |
 | Architecture | EditContext | textarea | contenteditable |
+
+## Speed and Size
+
+| Files | Blank Lines | Comments | Code | Total |
+|-------|-------------|----------|------|-------|
+| 7 | 82 | 127 | 604 | 813 |
+
+| File Name | Language | Size | Path | Blank Lines | Comments | Code |
+|-----------|----------|------|------|-------------|----------|------|
+| index.js | JavaScript | 173 bytes | / | 1 | 0 | 6 |
+| utilities.js | JavaScript | 764 bytes | / | 6 | 2 | 24 |
+| caret.js | JavaScript | 3.04 KB | components/ | 16 | 15 | 64 |
+| font.js | JavaScript | 360 bytes | components/ | 2 | 8 | 6 |
+| languages.js | JavaScript | 3.99 KB | components/ | 7 | 7 | 88 |
+| lineCounter.js | JavaScript | 3.72 KB | components/ | 5 | 24 | 62 |
+| textEditor.js | JavaScript | 17.81 KB | components/ | 44 | 71 | 351 |
+| **Total** | — | **29.857KB or roughly 30KB** | — | 82 | 127 | 605 |
+
+### Load time on Chrome
+![~25ms load](https://pfmcodes.onrender.com/apps/caret/chrome-speed.png)
+
+### Load time on Edge
+![~27ms load](https://pfmcodes.onrender.com/apps/caret/edge-speed.png)
+
+### ***TIP: after installing or cloning delete these files/directories:***
+- ***.gitignore***
+- ***.npmignore***
+- ***chrome-speed.png***
+- ***edge-speed.png***
+- ***LICENSE***
+- ***logo.svg***
+- ***package.json***
+- ***package-lock.json***
+- ***README.md***
+- ***.git***
+
+> This will reduce the package size to its orignal size
 
 ## How It Works
 
-Caret v0.3.0 uses Chrome's EditContext API to completely separate input handling from rendering:
+Caret v0.3+ uses Chrome's EditContext API to completely separate input handling from rendering:
 
 1. **EditContext** receives all keyboard input, IME, clipboard events
 2. **Text model** — a single string `text` is the source of truth

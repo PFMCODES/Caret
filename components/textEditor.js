@@ -1,42 +1,60 @@
 /**
  * createTextEditor {
- *    @param {string} content - Initial content of the editor
  *    @param {HTMLElement} parent - The element to append the editor to
+ *    @param {string} content - Initial content of the editor, default is ""
+ *    @param {string|number} id - Unique ID for this instance, used for undo/redo stack namespacing
  *    @param {Object} options - Optional configuration {
- *            @param {boolean} dark - dark theme is enabled or not, false by default
- *            @param {boolean} shadow - should boxShadow be enabled, true by default
- *            @param {string} focusColor - color of focus border, by default it is purple(#7c3aed)
- *            @param {string} shadowColor - only needed if the box shadow is enabled, default is black
- *            @param {boolean} lock - if enabled, makes the editor non editable, false by default
- *            @param {string} language - language for syntax highlighting, default is plaintext
- *            @param {string} hlTheme - highlight.js theme, default is hybrid
- *            @param {JSON} font {
- *                @param {string} url - optional, only needed if applying custom font
- *                @param {string} name - required if you want custom font with or without external font
+ *            @param {boolean} dark - dark theme enabled, false by default
+ *            @param {boolean} shadow - box shadow enabled, true by default
+ *            @param {string} focusColor - border color on focus, default #7c3aed
+ *            @param {string} shadowColor - shadow color, default #000
+ *            @param {boolean} lock - read-only mode, false by default
+ *            @param {string} language - highlight.js language, default "plaintext"
+ *            @param {string} hlTheme - highlight.js theme name, default "hybrid"
+ *            @param {Object} font {
+ *                @param {string} url - font file URL, only needed for external/custom fonts
+ *                @param {string} name - font name, required for custom fonts
  *            }
- *            @param {string/number} id - unique id for the editor for multiple instances
- *            @param {JSON} theme {
- *                @param {object} dark {
- *                    @param {string/color} background - background color for the dark theme
- *                    @param {string/color} color.editor - text color for dark theme
- *                    @param {string/color} editor.caret - caret color for dark theme
+ *            @param {Object} theme - custom colors {
+ *                @param {Object} dark {
+ *                    @param {string} background.editor - editor background color
+ *                    @param {string} background.lineCounter - line counter background color
+ *                    @param {string} color.editor - editor text color
+ *                    @param {string} color.lineCounter - line counter text color
+ *                    @param {string} editor.caret - caret color
  *                }
- *                @param {object} light {
- *                    @param {string/color} background - background color for the light theme
- *                    @param {string/color} color.editor - text color for light theme
- *                    @param {string/color} editor.caret - caret color for light theme
+ *                @param {Object} light {
+ *                    @param {string} background.editor - editor background color
+ *                    @param {string} background.lineCounter - line counter background color
+ *                    @param {string} color.editor - editor text color
+ *                    @param {string} color.lineCounter - line counter text color
+ *                    @param {string} editor.caret - caret color
  *                }
  *            }
  *    }
- *    @returns {object} {
- *                @return {string} getValue => () - returns the current value of editor
- *                @return {void} setValue => (@param {string} val) - sets the value of editor
- *                @return {void} onChange => (@param {function} fn) - fires when value changes
- *                @return {boolean} isFocused - tells if the editor is focused
- *                @return {void} setLanguage => (@param {string} lang) - changes highlight language
+ *    @returns {Promise<Object>} {
+ *                @return {function} getValue - returns current editor content (strips \u200B)
+ *                @return {function} setValue - (@param {string} val) sets editor content
+ *                @return {function} getCursor - returns current cursor offset
+ *                @return {function} setCursor - (@param {number} pos) moves cursor to position
+ *                @return {function} undo - undoes last change, restores cursor position
+ *                @return {function} redo - redoes last undone change, restores cursor position
+ *                @return {function} onChange - (@param {function} fn) fires on every content change with new text
+ *                @return {function} onCursorMove - (@param {function} fn) fires on every cursor move with new position
+ *                @return {function} isFocused - returns true if editor is currently focused
+ *                @return {function} setLanguage - (@param {string} lang) switches syntax highlighting language
+ *                @return {string} id - the editor instance id
+ *                @return {function} delete - destroys editor, removes DOM elements and event listeners
  *    }
+ *
+ *    @notes
+ *    - Requires Chrome/Chromium — uses EditContext API (not supported in Firefox/Safari yet)
+ *    - Undo/redo stacks accessible globally via window.caret[`undoStack.${id}`]
+ *    - \u200B (zero-width space) used internally for newline rendering, stripped from getValue()
+ *    - Keyboard shortcuts: Ctrl+Z undo, Ctrl+Y / Ctrl+Shift+Z redo, Tab indent, Shift+Tab unindent
  * }
 */
+
 import { createLineCounter, updateLineCounter } from "./lineCounter.js";
 import { loadFont } from "./font.js";
 import { createCaret } from "./caret.js";
@@ -47,6 +65,43 @@ import languages from "./languages.js";
 languages.init();
 
 async function createTextEditor(parent, content = "", id, options = {}) {
+    let onCursorMoveFn = null;
+    async function isChromiumEngine() {
+        if (navigator.userAgentData) {
+            return navigator.userAgentData.brands.some(b => b.brand === 'Chromium');
+        }
+        const ua = navigator.userAgent;
+        return /Chrome/i.test(ua) && !/Edg/i.test(ua) && !/OPR/i.test(ua);
+    }
+
+    async function getBrowserName() {
+        if (navigator.userAgentData) {
+            const brands = navigator.userAgentData.brands;
+            const primaryBrand = brands.find(b => b.brand !== 'Chromium' && b.brand !== 'Not(A:Brand)') || brands[0];
+            return primaryBrand.brand;
+        }
+
+        const ua = navigator.userAgent;
+        if (ua.includes("Firefox")) return "Mozilla Firefox";
+        if (ua.includes("SamsungBrowser")) return "Samsung Internet";
+        if (ua.includes("Opera") || ua.includes("OPR")) return "Opera";
+        if (ua.includes("Trident")) return "Internet Explorer";
+        if (ua.includes("Edge")) return "Microsoft Edge (Legacy)";
+        if (ua.includes("Edg")) return "Microsoft Edge";
+        if (ua.includes("Chrome")) return "Google Chrome";
+        if (ua.includes("Safari")) return "Apple Safari";
+        
+        return "Unknown Browser";
+    }
+
+    isChromiumEngine().then(async isChromium => {
+        if (!isChromium) {
+            const main = document.createElement("div");
+            main.style = "display: flex; align-items: center; justify-content: center; padding: 20px; white-space: pre-wrap; margin: 0 auto;";
+            main.innerHTML = `<h2>Caret (editor engine) does not yet support ${await getBrowserName()}.<br>File an issue <a href="https://github.com/PFMCODES/Caret/issues">here.</a></h2>`;
+            parent.appendChild(main);
+        }
+    });
     if (id === undefined || id === null || (typeof id !== "string" && typeof id !== "number")) {
         console.error(`parameter 'id' of function createTextEditor must not be '${typeof id}', it must be a number or string`);
         return;
@@ -56,11 +111,10 @@ async function createTextEditor(parent, content = "", id, options = {}) {
         return;
     }
     if (!("EditContext" in window)) {
-        console.error("EditContext API is not supported in this browser");
+        console.error("EditContext API is not supported in ", await getBrowserName());
         return;
     }
 
-    // undo/redo stack
     if (!window.caret) window.caret = {};
     window.caret[`undoStack.${id}`] = [{ content, cursor: 0 }];
     window.caret[`redoStack.${id}`] = [];
@@ -74,7 +128,6 @@ async function createTextEditor(parent, content = "", id, options = {}) {
     const font = options.font || {};
     let language = options.language || "plaintext";
 
-    // load hljs theme
     const themeLink = document.createElement("link");
     themeLink.rel = "stylesheet";
     themeLink.id = `caret-theme-${id}`;
@@ -83,7 +136,6 @@ async function createTextEditor(parent, content = "", id, options = {}) {
         : `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/hybrid.css`;
     document.head.appendChild(themeLink);
 
-    // load language if not registered
     if (!languages.registeredLanguages.includes(language)) {
         const mod = await import(`https://esm.sh/@pfmcodes/highlight.js@1.0.0/es/languages/${language}.js`);
         languages.registerLanguage(language, mod.default);
@@ -101,21 +153,18 @@ async function createTextEditor(parent, content = "", id, options = {}) {
         parent.style.fontFamily = fontName;
     }
 
-    // text model
     let text = content;
     let selStart = content.length;
     let selEnd = content.length;
     let isFocused = false;
     let onChangeFn = null;
 
-    // EditContext
     const editContext = new EditContext({
         text,
         selectionStart: selStart,
         selectionEnd: selEnd
     });
 
-    // main div
     const main = document.createElement("div");
     main.editContext = editContext;
     main.tabIndex = 0;
@@ -149,7 +198,6 @@ async function createTextEditor(parent, content = "", id, options = {}) {
         main.style.color = dark ? theme.dark["color.editor"] : theme.light["color.editor"];
     }
 
-    // caret color
     let caretColor;
     if (options.theme) {
         caretColor = dark ? options.theme.dark["editor.caret"] : options.theme.light["editor.caret"];
@@ -157,32 +205,34 @@ async function createTextEditor(parent, content = "", id, options = {}) {
         caretColor = "#fff";
     }
 
-    // parent styles
     parent.style.display = "flex";
     parent.style.alignItems = "flex-start";
     parent.style.border = "2px solid #0000";
     parent.style.padding = "5px";
     parent.style.position = "relative";
 
-    // line counter
     let lineCounter;
     lineCounter = await createLineCounter(parent, content.split("\n").length, id, options);
 
     parent.appendChild(main);
 
-    // caret
     const caret = createCaret(parent, main, { ...options, caretColor });
 
-    // --- render ---
     function render() {
-        const highlighted = unescapeHTML(hljs.highlight(unescapeHTML(text), { language }).value);
+        let displayText = text;
+        let od = 0;
+        if (displayText.endsWith("\n")) {
+            displayText += "\u200B";
+            od = 1;
+        }
+        const highlighted = hljs.highlight(displayText, { language }).value;
         main.innerHTML = highlighted;
-        updateLineCounter(lineCounter, text.trimEnd().split("\n").length);
+
+        updateLineCounter(lineCounter, text.trimEnd().split("\n").length + od);
         caret.update(selStart);
         if (onChangeFn) onChangeFn(text);
     }
 
-    // --- undo/redo ---
     function saveState() {
         const stack = window.caret[`undoStack.${id}`];
         if (text !== stack[stack.length - 1]?.content) {
@@ -219,10 +269,10 @@ async function createTextEditor(parent, content = "", id, options = {}) {
         render();
     }
 
-    // --- EditContext events ---
     editContext.addEventListener("textupdate", (e) => {
         if (lock) return;
         text = text.slice(0, e.updateRangeStart) + e.text + text.slice(e.updateRangeEnd);
+        text = text.replaceAll("\u200B", "");
         selStart = selEnd = e.selectionStart;
         editContext.updateText(0, editContext.text.length, text);
         saveState();
@@ -235,11 +285,6 @@ async function createTextEditor(parent, content = "", id, options = {}) {
         caret.update(selStart);
     });
 
-    editContext.addEventListener("textformatupdate", () => {
-        // IME formatting — ignore for now
-    });
-
-    // --- keyboard events ---
     main.addEventListener("keydown", (e) => {
         if (lock) return;
 
@@ -259,7 +304,6 @@ async function createTextEditor(parent, content = "", id, options = {}) {
             return;
         }
 
-        // Tab
         if (e.key === "Tab" && !e.shiftKey) {
             e.preventDefault();
             const indent = "    ";
@@ -281,7 +325,18 @@ async function createTextEditor(parent, content = "", id, options = {}) {
             return;
         }
 
-        // Shift+Tab
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const newText = text.slice(0, selStart) + "\n" + "\u200B" + text.slice(selEnd);
+            text = newText;
+            selStart = selEnd = selStart + 1;
+            editContext.updateText(0, text.length, text);
+            editContext.updateSelection(selStart, selEnd);
+            saveState();
+            render();
+            return;
+        }
+
         if (e.shiftKey && e.key === "Tab") {
             e.preventDefault();
             if (selStart !== selEnd) {
@@ -308,9 +363,54 @@ async function createTextEditor(parent, content = "", id, options = {}) {
             render();
             return;
         }
+        if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            selStart = selEnd = Math.max(0, selStart - 1);
+            editContext.updateSelection(selStart, selEnd);
+            caret.update(selStart);
+            if (onCursorMoveFn) onCursorMoveFn(selStart);
+            return;
+        }
+
+        if (e.key === "ArrowRight") {
+            e.preventDefault();
+            selStart = selEnd = Math.min(text.length, selStart + 1);
+            editContext.updateSelection(selStart, selEnd);
+            caret.update(selStart);
+            if (onCursorMoveFn) onCursorMoveFn(selStart);
+            return;
+        }
+
+        if (e.key === "ArrowUp") {
+            e.preventDefault();
+            const lineStart = text.lastIndexOf("\n", selStart - 1) + 1;
+            const prevLineEnd = lineStart - 1;
+            const prevLineStart = text.lastIndexOf("\n", prevLineEnd - 1) + 1;
+            const col = selStart - lineStart;
+            const prevLineLength = prevLineEnd - prevLineStart;
+            selStart = selEnd = prevLineStart + Math.min(col, prevLineLength);
+            editContext.updateSelection(selStart, selEnd);
+            caret.update(selStart);
+            if (onCursorMoveFn) onCursorMoveFn(selStart);
+            return;
+        }
+
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            const lineStart = text.lastIndexOf("\n", selStart - 1) + 1;
+            const nextLineStart = text.indexOf("\n", selStart) + 1;
+            const nextLineEnd = text.indexOf("\n", nextLineStart);
+            const finalNextLineEnd = nextLineEnd === -1 ? text.length : nextLineEnd;
+            const col = selStart - lineStart;
+            const nextLineLength = finalNextLineEnd - nextLineStart;
+            selStart = selEnd = nextLineStart + Math.min(col, nextLineLength);
+            editContext.updateSelection(selStart, selEnd);
+            caret.update(selStart);
+            if (onCursorMoveFn) onCursorMoveFn(selStart);
+            return;
+        }
     });
 
-    // paste
     main.addEventListener("paste", (e) => {
         if (lock) return;
         e.preventDefault();
@@ -323,7 +423,6 @@ async function createTextEditor(parent, content = "", id, options = {}) {
         render();
     });
 
-    // focus/blur
     main.addEventListener("focus", () => {
         isFocused = true;
         parent.style.border = `2px solid ${focusColor}`;
@@ -339,13 +438,11 @@ async function createTextEditor(parent, content = "", id, options = {}) {
         caret.hide();
     });
 
-    // click to position cursor
     main.addEventListener("click", (e) => {
         main.focus();
         const range = document.caretRangeFromPoint(e.clientX, e.clientY);
         if (!range) return;
 
-        // walk text nodes to find offset
         let offset = 0;
         let remaining = 0;
         const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
@@ -363,14 +460,21 @@ async function createTextEditor(parent, content = "", id, options = {}) {
         caret.update(selStart);
     });
 
-    // initial render
     render();
 
     return {
-        getValue: () => text,
+        getValue: () => text.replaceAll("\u200B", ""),
+        getCursor: () => selStart,
+        setCursor: (pos) => {
+            selStart = selEnd = Math.max(0, Math.min(pos, text.length));
+            editContext.updateSelection(selStart, selEnd);
+            caret.update(selStart);
+        },
+        undo: undo,
+        redo: redo,
         setValue: (val) => {
-            text = val;
-            selStart = selEnd = val.length;
+            text = val.replaceAll("\u200B", "");
+            selStart = selEnd = text.length;
             editContext.updateText(0, editContext.text.length, text);
             editContext.updateSelection(selStart, selEnd);
             render();
@@ -394,18 +498,6 @@ async function createTextEditor(parent, content = "", id, options = {}) {
             parent.style = "";
         }
     };
-}
-
-function unescapeHTML(str) {
-  const entities = {
-    '&amp;': '&',
-    '&lt;': '<',
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#39;': "'",
-    '&#039;': "'"
-  };
-  return str.replace(/&amp;|&lt;|&gt;|&quot;|&#39;|&#039;/g, tag => entities[tag] || tag);
 }
 
 export { createTextEditor }
