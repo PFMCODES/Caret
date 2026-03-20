@@ -374,10 +374,10 @@ import Caret from './node_modules/@pfmcodes/caret/index.js';
 const editor = await Caret.createEditor(
   document.getElementById('editor'),
   code,
-  'readonly-editor',
   {
     dark: true,
     language: 'python',
+    id: 'readonly-editor',
     hlTheme: 'github-dark',
     lock: true
   }
@@ -391,7 +391,7 @@ import Caret from './node_modules/@pfmcodes/caret/index.js';
 
 // each editor needs a unique id
 const editor1 = await Caret.createEditor(el1, code1, {id: 'editor-1', ...options});
-const editor2 = await Caret.createEditor(el2, code2,  id: 'editor-2', ...options });
+const editor2 = await Caret.createEditor(el2, code2, { id: 'editor-2', ...options });
 ```
 
 ### Custom Theme
@@ -521,7 +521,21 @@ editor.delete();
 ```
 
 ### Default Colors
+from `option`:
+| Property | Default |
+|----------|---------|
+| focusColor| #7c3aed |
+| shadowColor | #000000 |
+---
 
+from `theme`:
+| Property | Dark | Light |
+|----------|------|-------|
+| `background.editor` | #101010 | #d4d4d4 |
+| `editor.caret` | #ffffff | #111111 |
+| `color.editor` | #ffffff | #000000 |
+| `color.lineCounter` | #ffffff | #111111 |
+| `background.lineCounter` | #1e1e1e | #ffffff |
 
 ### Keyboard Shortcuts
 

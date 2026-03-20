@@ -145,6 +145,7 @@ async function createTextEditor(parent, content = "", options = {}) {
     let language = options.language || "plaintext";
     let cachedThemes = null;
     let cachedBase16 = null;
+    let onThemeChangeFn = null;
 
     const loadThemes = async () => {
         if (!cachedThemes || !cachedBase16) {
@@ -180,7 +181,6 @@ async function createTextEditor(parent, content = "", options = {}) {
         ? `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/${options.hlTheme}.css`
         : `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/hybrid.css`;
     document.head.appendChild(themeLink);
-
     if (!languages.registeredLanguages.includes(language)) {
         const mod = await import(`https://esm.sh/@pfmcodes/highlight.js@1.0.0/es/languages/${language}.js`);
         languages.registerLanguage(language, mod.default);
@@ -247,7 +247,7 @@ async function createTextEditor(parent, content = "", options = {}) {
     if (options.theme) {
         caretColor = dark ? options.theme.dark["editor.caret"] : options.theme.light["editor.caret"];
     } else {
-        caretColor = "#fff";
+        caretColor = dark ? "#fff" : "#111";
     }
 
     parent.style.display = "flex";
@@ -316,6 +316,7 @@ async function createTextEditor(parent, content = "", options = {}) {
 
     editContext.addEventListener("textupdate", (e) => {
         if (lock) return;
+        console.log("updateRange:", e.updateRangeStart, e.updateRangeEnd, "text:", e.text);
         text = text.slice(0, e.updateRangeStart) + e.text + text.slice(e.updateRangeEnd);
         text = text.replaceAll("\u200B", "");
         selStart = selEnd = e.selectionStart;
@@ -408,7 +409,22 @@ async function createTextEditor(parent, content = "", options = {}) {
             render();
             return;
         }
-        if (e.key === "ArrowLeft") {
+        if (e.key === "ArrowLeft" && e.shiftKey) {
+            e.preventDefault();
+            selStart = Math.max(0, selStart - 1);
+            editContext.updateSelection(selStart, selEnd);
+            caret.update(selStart);
+            return;
+        }
+
+        if (e.key === "ArrowRight" && e.shiftKey) {
+            e.preventDefault();
+            selEnd = Math.min(text.length, selEnd + 1);
+            editContext.updateSelection(selStart, selEnd);
+            caret.update(selEnd);
+            return;
+        }
+        if (e.key === "ArrowLeft" && !e.shiftKey) {
             e.preventDefault();
             selStart = selEnd = Math.max(0, selStart - 1);
             editContext.updateSelection(selStart, selEnd);
@@ -417,7 +433,7 @@ async function createTextEditor(parent, content = "", options = {}) {
             return;
         }
 
-        if (e.key === "ArrowRight") {
+        if (e.key === "ArrowRight" && !e.shiftKey) {
             e.preventDefault();
             selStart = selEnd = Math.min(text.length, selStart + 1);
             editContext.updateSelection(selStart, selEnd);
@@ -426,7 +442,38 @@ async function createTextEditor(parent, content = "", options = {}) {
             return;
         }
 
-        if (e.key === "ArrowUp") {
+        if (e.key === "ArrowUp" && e.shiftKey) {
+            e.preventDefault();
+            const lineStart = text.lastIndexOf("\n", selStart - 1) + 1;
+            const prevLineEnd = lineStart - 1;
+            const prevLineStart = text.lastIndexOf("\n", prevLineEnd - 1) + 1;
+            const col = selStart - lineStart;
+            const prevLineLength = prevLineEnd - prevLineStart;
+            selStart = prevLineStart + Math.min(col, prevLineLength);
+            // selEnd stays — extends selection upward
+            editContext.updateSelection(selStart, selEnd);
+            caret.update(selStart);
+            if (onCursorMoveFn) onCursorMoveFn(selStart);
+            return;
+        }
+
+        if (e.key === "ArrowDown" && e.shiftKey) {
+            e.preventDefault();
+            const lineStart = text.lastIndexOf("\n", selEnd - 1) + 1;
+            const nextLineStart = text.indexOf("\n", selEnd) + 1;
+            const nextLineEnd = text.indexOf("\n", nextLineStart);
+            const finalNextLineEnd = nextLineEnd === -1 ? text.length : nextLineEnd;
+            const col = selEnd - lineStart;
+            const nextLineLength = finalNextLineEnd - nextLineStart;
+            selEnd = nextLineStart + Math.min(col, nextLineLength);
+            // selStart stays — extends selection downward
+            editContext.updateSelection(selStart, selEnd);
+            caret.update(selEnd);
+            if (onCursorMoveFn) onCursorMoveFn(selEnd);
+            return;
+        }
+
+        if (e.key === "ArrowUp" && !e.shiftKey) {
             e.preventDefault();
             const lineStart = text.lastIndexOf("\n", selStart - 1) + 1;
             const prevLineEnd = lineStart - 1;
@@ -440,7 +487,7 @@ async function createTextEditor(parent, content = "", options = {}) {
             return;
         }
 
-        if (e.key === "ArrowDown") {
+        if (e.key === "ArrowDown" && !e.shiftKey) {
             e.preventDefault();
             const lineStart = text.lastIndexOf("\n", selStart - 1) + 1;
             const nextLineStart = text.indexOf("\n", selStart) + 1;
@@ -481,6 +528,60 @@ async function createTextEditor(parent, content = "", options = {}) {
         parent.style.border = "2px solid #0000";
         if (boxShadow) parent.style.boxShadow = `1px 1px 1px 1px ${shadowColor}`;
         caret.hide();
+    });
+
+    let isMouseDown = false;
+    let dragStart = 0;
+
+    main.addEventListener("mousedown", (e) => {
+        isMouseDown = true;
+        main.focus();
+        const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+        if (!range) return;
+
+        let offset = 0;
+        let remaining = 0;
+        const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+            if (node === range.startContainer) {
+                offset = remaining + range.startOffset;
+                break;
+            }
+            remaining += node.textContent.length;
+        }
+
+        dragStart = offset;
+        selStart = selEnd = offset;
+        editContext.updateSelection(selStart, selEnd);
+        caret.update(selStart);
+    });
+
+    main.addEventListener("mousemove", (e) => {
+        if (!isMouseDown) return;
+        const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+        if (!range) return;
+
+        let offset = 0;
+        let remaining = 0;
+        const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+            if (node === range.startContainer) {
+                offset = remaining + range.startOffset;
+                break;
+            }
+            remaining += node.textContent.length;
+        }
+
+        selStart = Math.min(dragStart, offset);
+        selEnd = Math.max(dragStart, offset);
+        editContext.updateSelection(selStart, selEnd);
+        caret.update(selStart);
+    });
+
+    document.addEventListener("mouseup", () => {
+        isMouseDown = false;
     });
 
     main.addEventListener("click", (e) => {
@@ -527,6 +628,14 @@ async function createTextEditor(parent, content = "", options = {}) {
         id: options.id,
         onChange: (fn) => { onChangeFn = fn; },
         isFocused: () => isFocused,
+        setTheme: async (name) => {
+            const validTheme = await isValidTheme(name);
+            themeLink.href = validTheme
+                ? `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/${name}.css`
+                : `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/hybrid.css`;
+                if (onThemeChangeFn) onThemeChangeFn(validTheme ? name : "hybrid");
+        },
+        onThemeChange: (cb) => { onThemeChangeFn = cb; },
         setLanguage: async (lang) => {
             if (!languages.registeredLanguages.includes(lang)) {
                 const mod = await import(`https://esm.sh/@pfmcodes/highlight.js@1.0.0/es/languages/${lang}.js`);
@@ -535,6 +644,7 @@ async function createTextEditor(parent, content = "", options = {}) {
             language = lang;
             render();
         },
+        onCursorMove: (cb) => { onCursorMoveFn = cb },
         delete: () => {
             parent.removeChild(main);
             parent.removeChild(lineCounter);
