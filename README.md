@@ -191,7 +191,7 @@ pnpm add @pfmcodes/caret
   <div id="result"></div>
 
   <script type="module">
-    import Caret from '.node_modules/@pfmcodes/caret/index.js';
+    import Caret from './index.js';
 
     window.language = 'javascript';
     window.currentTheme = 'tokyo-night-dark';
@@ -239,13 +239,12 @@ for i in range(25):
     const editorInstance = await Caret.createEditor(
       document.getElementById('editor'),
       jsCode,
-      'demo-editor',
       {
         dark: true,
         language: 'javascript',
+        id: `${Math.floor(Math.random() * 1000000000)}`,
         hlTheme: 'tokyo-night-dark',
         focusColor: '#7116d8',
-        id: Math.floor(Math.random() * 1000000000),
         theme: {
           dark: {
             'background.editor': '#1a1a2e',
@@ -264,7 +263,7 @@ for i in range(25):
         }
       }
     );
-    
+
     window.editorInstance = editorInstance;
 
     window.changeLanguage = async (lang) => {
@@ -358,8 +357,8 @@ import Caret from './node_modules/@pfmcodes/caret/index.js';
 const editor = await Caret.createEditor(
   document.getElementById('editor'),  // parent element
   'const x = 42;',                    // initial content
-  'my-editor',                        // unique id
   {
+    id: 'my-editor',                        // unique id
     dark: true,
     language: 'javascript',
     hlTheme: 'tokyo-night-dark'
@@ -391,8 +390,8 @@ const editor = await Caret.createEditor(
 import Caret from './node_modules/@pfmcodes/caret/index.js';
 
 // each editor needs a unique id
-const editor1 = await Caret.createEditor(el1, code1, 'editor-1', options);
-const editor2 = await Caret.createEditor(el2, code2, 'editor-2', options);
+const editor1 = await Caret.createEditor(el1, code1, {id: 'editor-1', ...options});
+const editor2 = await Caret.createEditor(el2, code2,  id: 'editor-2', ...options });
 ```
 
 ### Custom Theme
@@ -465,17 +464,18 @@ Creates a new editor instance.
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `dark` | `boolean` | `false` | Dark mode |
-| `shadow` | `boolean` | `true` | Box shadow |
-| `focusColor` | `string` | `#7c3aed` | Border color on focus |
-| `shadowColor` | `string` | `#000` | Shadow color |
-| `lock` | `boolean` | `false` | Read-only mode |
-| `language` | `string` | `plaintext` | Highlight.js language |
-| `hlTheme` | `string` | `hybrid` | Highlight.js theme |
-| `font` | `object` | — | Custom font `{ url, name }` |
-| `theme` | `object` | — | Custom colors (see above) |
+| Option | Type | Default | Required | Description |
+|--------|------|---------|----------|-------------|
+| `dark` | `boolean` | `false` | ✕ | Dark mode |
+| `id` | `string` | - | ✓ | required to distinguish between multiple instances |
+| `shadow` | `boolean` | `true` | ✕ | Box shadow |
+| `focusColor` | `string` | `#7c3aed` | ✕ | Border color on focus |
+| `shadowColor` | `string` | `#000` | ✕ | Shadow color |
+| `lock` | `boolean` | `false` | ✕ | Read-only mode |
+| `language` | `string` | `plaintext` | ✓ | Highlight.js language |
+| `hlTheme` | `string` | `hybrid` | ✕ | Highlight.js theme |
+| `font` | `object` | — | ✕ | Custom font `{ url, name }` |
+| `theme` | `object` | — | ✕ | Custom colors ([see more.](#default-colors)) |
 
 **Returns:** `Promise<EditorInstance>`
 
@@ -519,6 +519,9 @@ await editor.setLanguage('python');
 // Destroy instance and clean up all DOM elements and event listeners
 editor.delete();
 ```
+
+### Default Colors
+
 
 ### Keyboard Shortcuts
 

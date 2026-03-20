@@ -2,8 +2,8 @@
  * createTextEditor {
  *    @param {HTMLElement} parent - The element to append the editor to
  *    @param {string} content - Initial content of the editor, default is ""
- *    @param {string|number} id - Unique ID for this instance, used for undo/redo stack namespacing
  *    @param {Object} options - Optional configuration {
+ *            @param {string|number} id - Unique ID for this instance, used for undo/redo stack namespacing
  *            @param {boolean} dark - dark theme enabled, false by default
  *            @param {boolean} shadow - box shadow enabled, true by default
  *            @param {string} focusColor - border color on focus, default #7c3aed
@@ -49,9 +49,9 @@
  *
  *    @notes
  *    - Requires Chrome/Chromium — uses EditContext API (not supported in Firefox/Safari yet)
- *    - Undo/redo stacks accessible globally via window.caret[`undoStack.${id}`]
+ *    - Undo/redo stacks accessible globally via window.caret.undoStack[id]
  *    - \u200B (zero-width space) used internally for newline rendering, stripped from getValue()
- *    - Keyboard shortcuts: Ctrl+Z undo, Ctrl+Y / Ctrl+Shift+Z redo, Tab indent, Shift+Tab unindent
+ *    - Keyboard shortcuts: Ctrl+Z: undo, Ctrl+Y / Ctrl+Shift+Z: redo, Tab: indent, Shift+Tab: unindent, Arrow keys(←→↓↑): navigate around
  * }
 */
 
@@ -64,7 +64,8 @@ import languages from "./languages.js";
 
 languages.init();
 
-async function createTextEditor(parent, content = "", id, options = {}) {
+async function createTextEditor(parent, content = "", options = {}) {
+    const id = options.id;
     let onCursorMoveFn = null;
     async function isChromiumEngine() {
         if (navigator.userAgentData) {
@@ -103,21 +104,36 @@ async function createTextEditor(parent, content = "", id, options = {}) {
         }
     });
     if (id === undefined || id === null || (typeof id !== "string" && typeof id !== "number")) {
-        console.error(`parameter 'id' of function createTextEditor must not be '${typeof id}', it must be a number or string`);
+        console.error(`parameter 'id' from options must not be a '${typeof id}', it must be a number or string, current value of 'id': ${options.id}`);
         return;
     }
     if (!parent || !(parent instanceof HTMLElement)) {
-        console.error(`'parent' parameter of function 'createTextEditor' must be an HTMLElement`);
+        console.error(`'parent' parameter of function 'createTextEditor' must be an HTMLElement, must not be a ${typeof parent}, current value of 'parent': ${options.parent}`);
         return;
     }
     if (!("EditContext" in window)) {
         console.error("EditContext API is not supported in ", await getBrowserName());
         return;
     }
+    if (options.language === undefined || options.language === null || typeof options.language !== "string") {
+        console.error(`parameter 'language' from options must be a string, not be a '${typeof options.language}', current value of 'langauge': ${options.language}`);
+        return;
+    }
 
-    if (!window.caret) window.caret = {};
-    window.caret[`undoStack.${id}`] = [{ content, cursor: 0 }];
-    window.caret[`redoStack.${id}`] = [];
+    if (!window.caret) window.caret = {
+        instances: {},
+        undoStack: {},
+        redoStack: {}
+    };
+
+    if (window.caret.instances[id]) {
+        console.error(`Caret: instance with id "${id}" already exists`);
+        return;
+    }
+
+    window.caret.instances[id] = true;
+    window.caret.undoStack[id] = [{ content, cursor: 0 }];
+    window.caret.redoStack[id] = [];
 
     const lock = options.lock || false;
     const focusColor = options.focusColor || '#7c3aed';
@@ -127,11 +143,40 @@ async function createTextEditor(parent, content = "", id, options = {}) {
     const theme = options.theme;
     const font = options.font || {};
     let language = options.language || "plaintext";
+    let cachedThemes = null;
+    let cachedBase16 = null;
+
+    const loadThemes = async () => {
+        if (!cachedThemes || !cachedBase16) {
+            const [themes, base16] = await Promise.all([
+                fetch('https://raw.githubusercontent.com/PFMCODES/Website./main/apps/caret/themes.json').then(res => res.json()),
+                fetch('https://raw.githubusercontent.com/PFMCODES/Website./main/apps/caret/themes-base16.json').then(res => res.json())
+            ]);
+
+            cachedThemes = themes;
+            cachedBase16 = base16;
+        }
+    };
+
+    const isValidTheme = async (theme) => {
+        if (!theme) return false;
+
+        await loadThemes();
+
+        const valid = cachedThemes.includes(theme) || cachedBase16.includes(theme);
+
+        if (!valid) {
+            console.warn(`${theme} is an invalid Highlight.js theme, defaulting to hybrid`);
+        }
+
+        return valid;
+    };
 
     const themeLink = document.createElement("link");
     themeLink.rel = "stylesheet";
     themeLink.id = `caret-theme-${id}`;
-    themeLink.href = options.hlTheme
+    const validTheme = await isValidTheme(options.hlTheme);
+    themeLink.href = validTheme
         ? `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/${options.hlTheme}.css`
         : `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/hybrid.css`;
     document.head.appendChild(themeLink);
@@ -234,16 +279,16 @@ async function createTextEditor(parent, content = "", id, options = {}) {
     }
 
     function saveState() {
-        const stack = window.caret[`undoStack.${id}`];
+        const stack = window.caret.undoStack[id];
         if (text !== stack[stack.length - 1]?.content) {
             stack.push({ content: text, cursor: selStart });
-            window.caret[`redoStack.${id}`] = [];
+            window.caret.redoStack[id] = [];
         }
     }
 
     function undo() {
-        const stack = window.caret[`undoStack.${id}`];
-        const redoStack = window.caret[`redoStack.${id}`];
+        const stack = window.caret.undoStack[id];
+        const redoStack = window.caret.redoStack[id];
         if (stack.length <= 1) return;
         const current = stack.pop();
         redoStack.push(current);
@@ -257,8 +302,8 @@ async function createTextEditor(parent, content = "", id, options = {}) {
     }
 
     function redo() {
-        const stack = window.caret[`undoStack.${id}`];
-        const redoStack = window.caret[`redoStack.${id}`];
+        const stack = window.caret.undoStack[id];
+        const redoStack = window.caret.redoStack[id];
         if (redoStack.length === 0) return;
         const next = redoStack.pop();
         stack.push(next);
@@ -496,6 +541,9 @@ async function createTextEditor(parent, content = "", id, options = {}) {
             caret.destroy();
             document.head.removeChild(themeLink);
             parent.style = "";
+            delete window.caret.instances[id];
+            delete window.caret.undoStack[id];
+            delete window.caret.redoStack[id];
         }
     };
 }
