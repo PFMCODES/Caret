@@ -1,55 +1,68 @@
 ![LOGO](https://github.com/PFMCODES/Caret/raw/main/logo.svg)
 # Caret
 [![License: MIT](https://img.shields.io/badge/License-MIT-4000ff.svg)](https://opensource.org/licenses/MIT)
-[![JavaScript](https://img.shields.io/badge/JavaScript-63.7%25-f6fa03)](https://github.com/PFMCODES/lexius-edior)
-[![JavaScript](https://img.shields.io/badge/TypeScript-32.3%25-0244f7)](https://github.com/PFMCODES/lexius-edior)
-[![CSS](https://img.shields.io/badge/CSS-4.0%25-2e7ad1)](https://github.com/pfmcodes/lexius-editor)
+[![JavaScript](https://img.shields.io/badge/JavaScript-63.7%25-f6fa03)](https://github.com/PFMCODES/Caret)
+[![TypeScript](https://img.shields.io/badge/TypeScript-32.3%25-0244f7)](https://github.com/PFMCODES/Caret)
+[![CSS](https://img.shields.io/badge/CSS-4.0%25-2e7ad1)](https://github.com/PFMCODES/Caret)
 
-A lightweight, feature-rich code editor with real-time syntax highlighting and custom caret rendering. Built with vanilla JavaScript and powered by Highlight.js, caret delivers a smooth coding experience with professional-grade features.
+A lightweight, fast code editor engine with real-time syntax highlighting, custom caret rendering, and a clean EditContext-based architecture. 551 lines. 26KB. 42ms load time.
 
 ## Features
 
-- **Live Syntax Highlighting** - Real-time code highlighting powered by Highlight.js
-- **Custom Caret** - Smooth, pixel-perfect Caret positioning and rendering
+- **EditContext API** - Clean input handling with no browser fighting, no textarea hacks
+- **Live Syntax Highlighting** - Real-time highlighting powered by Highlight.js
+- **Custom Caret** - Pixel-perfect caret positioning via Range API
 - **Line Numbers** - Built-in line counter with dynamic updates
-- **Smart Indentation** - Tab/Shift+Tab support for indenting/unindenting code blocks
-- **Theme Support** - Multiple syntax highlighting themes (light/dark modes)
-- **Smooth Scrolling** - Synchronized scrolling for code, highlights, and line numbers
-- **ES Modules** - Modern ESM architecture for easy integration
-- **TypeScript Ready** - Full TypeScript definitions included
-- **Lightweight** - Pure JavaScript, no heavy frameworks required
+- **Smart Indentation** - Tab/Shift+Tab for indenting and unindenting code blocks
+- **Undo/Redo** - Full undo/redo stack with cursor position restoration (Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z)
+- **Theme Support** - Custom background, text, caret and line counter colors
+- **Lock Mode** - Read-only mode for displaying code
+- **Font Support** - Custom font loading
+- **Paste Handling** - Always pastes plain text, no rich HTML
+- **ES Modules** - Modern ESM architecture
+- **Lightweight** - 551 lines, 26KB total, loads in ~42ms
 
 ## Table of Contents
 
-- [What's new](#What's-New?)
+- [What's New](#whats-new)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Project Structure](#project-structure)
 - [Usage](#usage)
+- [API Reference](#api-reference)
 - [Customization](#customization)
-- [Contributing](#contributing)
+- [Browser Support](#browser-support)
+- [Performance](#performance)
 - [License](#license)
-- [Perfomance Notes](#performance-notes)
 
-## What's-New?
+## What's New
+
+### v0.4.0 — Complete Rewrite
+- **Ditched textarea** — rebuilt on Chrome's EditContext API
+- **No more sync issues** — single text model, no dual layer fighting
+- **Undo/redo with cursor restoration** — cursor returns to exact position
+- **Pixel-perfect caret** — positioned via Range API, no canvas math
+- **Modular architecture** — `textEditor.js`, `caret.js`, `lineCounter.js`, `font.js`, `languages.js`
+- **setLanguage()** — switch language at runtime
+- **delete()** — clean teardown with full event listener removal
+- **onClick cursor positioning** — click anywhere to place cursor
+- **Known limitation** — EditContext requires Chrome/Chromium (Firefox support pending)
 
 ### v0.2.8
-- just mistake i made has been fixed
+- Bug fixes
 
 ### v0.2.7
-- another cleanup but this time, with file optimizations and updated comments at the end of each containing short summaries of each function and variables(only some important variables)
+- File optimizations and updated comments
 
 ### v0.2.6
-
-- CommonJs support has been removed to reduce package size
+- CommonJS support removed to reduce package size
 
 ### v0.2.5
 - Multiple editor instances support
 - Word-aware line wrapping
 - Fixed language re-registration bug
-- Known issue: custom caret may be 1 character off on original lines of a wrapped line
 
-##  Installation
+## Installation
 
 ### NPM
 
@@ -71,295 +84,6 @@ pnpm add @pfmcodes/caret
 
 ## Quick Start
 
-### Basic Usage
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caret</title>
-  <link rel="stylesheet" href="node_modules/caret/index.css">
-</head>
-<body>
-  <div id="editor"></div>
-  
-  <script type="module">
-    import editor from './node_modules/@pfmcodes/caret/index.js';
-    
-    const instance = await editor.editor.createEditor(
-      document.getElementById('editor'),
-      {
-        value: 'console.log("Hello, World!");',
-        language: 'javascript',
-        theme: 'hybrid'
-      }
-    );
-  </script>
-</body>
-</html>
-```
-
-### ES Module Import
-
-```javascript
-import editor from './node_modules/@pfmcodes/caret/index.js';
-
-// Create editor instance
-const editorInstance = await editor.editor.createEditor(
-  document.getElementById('editor'),
-  {
-    value: '',           // Initial code
-    language: 'python',  // Programming language
-    theme: 'monokai'     // Highlight.js theme
-  }
-);
-```
-
-## Project Structure
-
-```
-caret/
-├── types/              # TypeScript type definitions
-├── .gitignore          # Git ignore rules
-├── .npmignore          # NPM ignore rules
-├── editor.js           # main editor file essential for ui
-├── index.css           # Core styles
-├── index.js            # Main file
-├── langauges.js        # handles langauge related tasks
-├── LICENSE             # MIT License
-├── package.json        # Package configuration
-├── README.md           # The file containing instructions and help
-└── theme.js            # handles theme related tasks
-```
-
-## Usage
-
-### JavaScript Editor
-
-```javascript
-import editor from './node_modules/@pfmcodes/caret/index.js';
-const jsEditor = await editor.editor.createEditor(
-  document.getElementById('js-editor'),
-  {
-    value: `function greet(name) {
-  return \`Hello, \${name}!\`;
-}
-
-console.log(greet('World'));`,
-    language: 'javascript',
-    theme: 'atom-one-dark'
-  }
-);
-```
-
-### Python Editor
-
-```javascript
-const pyEditor = await editor.editor.createEditor(
-  document.getElementById('py-editor'),
-  {
-    value: `def fibonacci(n):
-    if n <= 1:
-        return n
-    return fibonacci(n-1) + fibonacci(n-2)
-
-print([fibonacci(i) for i in range(10)])`,
-    language: 'python',
-    theme: 'github-dark'
-  }
-);
-```
-
-### Empty Editor (Start from Scratch)
-
-```javascript
-const emptyEditor = await editor.editor.createEditor(
-  document.getElementById('empty-editor'),
-  {
-    value: '',
-    language: 'javascript',
-    theme: 'hybrid'
-  }
-);
-```
-
-## Customization
-
-### Custom Styling
-
-The editor comes with default styles that you can override:
-
-```css
-/* Custom editor styling */
-#editor {
-  width: 800px !important;
-  height: 500px !important;
-  font-size: 16px !important;
-}
-
-/* Customize line numbers */
-.Caret-lineCounter {
-  background: #1e1e1e;
-}
-
-.Caret-lineCounter-number {
-  font-size: 12px;
-  padding: 0 8px;
-}
-
-/* Customize the textarea */
-#Caret-textarea {
-  font-family: 'Fira Code', 'Consolas', monospace;
-  line-height: 1.6;
-}
-
-/* Customize the Caret */
-#Caret-caret {
-  background: #00ff00 !important;
-  width: 3px !important;
-}
-```
-
-## Advanced Features
-
-### Multi-Language Support
-
-Caret supports all languages available in Highlight.js:
-
-```javascript
-// JavaScript
-await editor.editor.createEditor(el, { language: 'javascript', ... });
-
-// Python
-await editor.editor.createEditor(el, { language: 'python', ... });
-
-// TypeScript
-await editor.editor.createEditor(el, { language: 'typescript', ... });
-
-// HTML
-await editor.editor.createEditor(el, { language: 'html', ... });
-
-// CSS
-await editor.editor.createEditor(el, { language: 'css', ... });
-
-// And many more...
-```
-
-### Dynamic Language Switching
-
-```javascript
-const editorInstance = await editor.editor.createEditor(el, {
-  value: 'console.log("Hello");',
-  language: 'javascript',
-  theme: 'hybrid'
-});
-
-// Later, switch to Python
-editorInstance.setValue('print("Hello")');
-editorInstance.setLanguage('python');
-```
-
-### Real-Time Code Editing
-
-The editor automatically:
-- Updates syntax highlighting as you type
-- Adjusts line numbers dynamically
-- Maintains Caret position accurately
-- Synchronizes all visual components
-
-### Configuration Options
-
-```javascript
-const editorInstance = await editor.editor.createEditor(
-  containerElement,
-  {
-    // Initial code content
-    value: 'const x = 42;',
-    
-    // Programming language for syntax highlighting
-    // Supports: javascript, python, java, cpp, html, css, json, etc.
-    language: 'javascript',
-    
-    // Highlight.js theme name
-    // Examples: 'hybrid', 'monokai', 'atom-one-dark', 'github', 'vs2015'
-    theme: 'hybrid'
-  }
-);
-```
-
-### Available Themes
-
-Caret supports all Highlight.js themes. Popular options include:
-
-**Dark Themes:**
-- `atom-one-dark`
-- `monokai`
-- `night-owl`
-- `nord`
-- `tokyo-night-dark`
-- `vs2015`
-
-**Light Themes:**
-- `github`
-- `atom-one-light`
-- `stackoverflow-light`
-- `xcode`
-
-## API Reference
-
-### createEditor(container, options)
-
-Creates a new editor instance.
-
-**Parameters:**
-- `container` (HTMLElement) - The DOM element to attach the editor to
-- `options` (Object) - Configuration options
-  - `value` (string) - Initial code content
-  - `language` (string) - Programming language for syntax highlighting
-  - `theme` (string) - Highlight.js theme name
-
-**Returns:** Promise<EditorInstance>
-
-### EditorInstance Methods
-
-```javascript
-// Get current editor content
-const code = editorInstance.getValue();
-
-// Set editor content programmatically
-editorInstance.setValue('console.log("New code");');
-
-// Focus the editor
-editorInstance.focus();
-
-// Change the programming language
-editorInstance.setLanguage('python');
-
-// Destroy the editor instance
-editorInstance.destroy();
-```
-
-### Editor Features
-
-#### Automatic Line Numbering
-Line numbers are automatically generated and synchronized with your code.
-
-#### Smart Tab Handling
-- **Tab** - Indent selected lines or insert 4 spaces
-- **Shift + Tab** - Unindent selected lines
-
-#### Custom Caret
-The editor features a custom-rendered Caret that adapts to your theme (light/dark).
-
-#### Synchronized Scrolling
-All editor components (code, highlights, line numbers) scroll together smoothly.
-
-## Complete Example
-
-Here's a complete working example:
-
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -367,66 +91,100 @@ Here's a complete working example:
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Caret Demo</title>
-  <link rel="stylesheet" href="./index.css">
+  <link rel="shortcut icon" href="logo.svg" type="image/svg">
   <style>
     body {
       font-family: system-ui, -apple-system, sans-serif;
       padding: 20px;
-      background: #f5f5f5;
+      background: #1a1a2e;
+      color: #fff;
     }
-    
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
     #editor {
       width: 900px;
       height: 600px;
       margin: 20px auto;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
       border-radius: 8px;
       overflow: hidden;
     }
-    
+
+    #result {
+      width: 900px;
+      margin: 10px auto;
+      padding: 10px;
+      background: #111;
+      color: #0f0;
+      font-family: monospace;
+      font-size: 13px;
+      border-radius: 8px;
+      min-height: 40px;
+      white-space: pre-wrap;
+    }
+
     .controls {
       max-width: 900px;
       margin: 0 auto 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    
+
+    .controls span {
+      font-size: 12px;
+      opacity: 0.5;
+      align-self: center;
+      margin: 0 4px;
+    }
+
     button {
       padding: 8px 16px;
-      margin-right: 8px;
       border: none;
       background: #7116d8;
       color: white;
       border-radius: 4px;
       cursor: pointer;
+      font-size: 13px;
     }
-    
+
     button:hover {
       background: #5a11ab;
     }
   </style>
 </head>
 <body>
-  <h1 style="text-align: center;">Caret Demo</h1>
-  
+  <h1>Caret Demo</h1>
+
   <div class="controls">
+    <span>Language:</span>
     <button onclick="window.changeLanguage('javascript')">JavaScript</button>
     <button onclick="window.changeLanguage('python')">Python</button>
     <button onclick="window.changeLanguage('html')">HTML</button>
+    <span>Theme:</span>
+    <button onclick="window.changeTheme('tokyo-night-dark')">Tokyo Night</button>
     <button onclick="window.changeTheme('monokai')">Monokai</button>
-    <button onclick="window.changeTheme('github-dark')">GitHub</button>
+    <button onclick="window.changeTheme('github-dark')">GitHub Dark</button>
     <button onclick="window.changeTheme('atom-one-dark')">Atom One Dark</button>
+    <span>Actions:</span>
+    <button onclick="window.runCode()">▶ Run</button>
     <button onclick="window.getCode()">Get Code</button>
   </div>
-  
+
   <div id="editor"></div>
-  
+  <div id="result"></div>
+
   <script type="module">
-    import editor from './node_modules/@pfmcodes/caret/index.js';
-    
-    // Initialize editor
-    const editorInstance = await editor.editor.createEditor(
-      document.getElementById('editor'),
-      {
-        value: `// Welcome to Caret!
+    import { createTextEditor } from './components/textEditor.js';
+
+    window.language = 'javascript';
+    window.currentTheme = 'tokyo-night-dark';
+
+    const jsCode = `// Welcome to Caret!
 function fibonacci(n) {
   if (n <= 1) return n;
   return fibonacci(n - 1) + fibonacci(n - 2);
@@ -435,115 +193,412 @@ function fibonacci(n) {
 // Calculate first 10 Fibonacci numbers
 for (let i = 0; i < 10; i++) {
   console.log(\`F(\${i}) = \${fibonacci(i)}\`);
-}`,
+}`;
+
+    const pyCode = `# Welcome to Caret!
+def fibonacci(n):
+    if n < 1:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+# Calculate first 25 Fibonacci numbers
+for i in range(25):
+    print(" i: " + f'{i} = {fibonacci(i)}. ')`;
+
+    const htmlCode = `<!-- Welcome to Caret! -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caret HTML Demo</title>
+</head>
+<body>
+  <h1>Hello, Caret!</h1>
+  <p>This is a simple HTML example to demonstrate Caret's capabilities.</p>
+  <ul>
+    <li>HTML5 support</li>
+    <li>Syntax highlighting</li>
+    <li>Auto-completion</li>
+  </ul>
+</body>
+</html>`;
+
+    const editorInstance = await createTextEditor(
+      document.getElementById('editor'),
+      jsCode,
+      'demo-editor',
+      {
+        dark: true,
         language: 'javascript',
-        theme: 'tokyo-night-dark'
+        hlTheme: 'tokyo-night-dark',
+        focusColor: '#7116d8',
+        id: Math.floor(Math.random() * 1000000000),
+        theme: {
+          dark: {
+            'background.editor': '#1a1a2e',
+            'background.lineCounter': '#16213e',
+            'color.editor': '#d4d4d4',
+            'color.lineCounter': '#888',
+            'editor.caret': '#7116d8'
+          },
+          light: {
+            'background.editor': '#fff',
+            'background.lineCounter': '#f0f0f0',
+            'color.editor': '#000',
+            'color.lineCounter': '#666',
+            'editor.caret': '#7116d8'
+          }
+        }
       }
     );
-    
-    // Make it globally accessible for demo buttons
+
     window.editorInstance = editorInstance;
-    
-    window.changeLanguage = (lang) => {
-      editorInstance.setLanguage(lang);
+
+    window.changeLanguage = async (lang) => {
+      window.language = lang;
+      await editorInstance.setLanguage(lang);
+      if (lang === 'javascript') editorInstance.setValue(jsCode);
+      if (lang === 'python') editorInstance.setValue(pyCode);
+      if (lang === 'html') editorInstance.setValue(htmlCode);
     };
-    
+
     window.changeTheme = (theme) => {
-      editor.theme.setTheme(theme);
+      window.currentTheme = theme;
+      // update the hlTheme stylesheet
+      const link = document.getElementById('caret-theme-demo-editor');
+      if (link) link.href = `https://esm.sh/@pfmcodes/highlight.js@1.0.0/styles/${theme}.css`;
     };
-    
-    window.getCode = () => {
+
+    window.runCode = async () => {
+      const resultEl = document.getElementById('result');
+      resultEl.textContent = 'Running...';
+
+      if (window.language === 'html') {
+        resultEl.innerHTML = editorInstance.getValue();
+        return;
+      }
+
       const code = editorInstance.getValue();
-      console.log(code);
-      alert('Code copied to console!');
+      const lang = window.language;
+
+      try {
+        const res = await fetch('https://lexius-transpiler.onrender.com/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, lang })
+        });
+
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+        const data = await res.json();
+        const exec = data.result ?? {};
+        const stdout = exec.stdout ?? '';
+        const stderr = exec.stderr ?? '';
+        const result = exec.result !== undefined && exec.result !== null
+          ? String(exec.result) : '';
+
+        resultEl.textContent = [stdout, stderr, result].filter(Boolean).join('\n') + '\n';
+      } catch (err) {
+        resultEl.textContent = 'Error: ' + (err.message || err) + '\n';
+      }
+    };
+
+    window.getCode = async () => {
+      try {
+        await navigator.clipboard.writeText(editorInstance.getValue());
+        window.confirm('Text copied to clipboard');
+      } catch (err) {
+        window.alert('Failed to copy: ', err);
+      }
     };
   </script>
 </body>
 </html>
 ```
 
-## Technical Details
+## Project Structure
 
-### How It Works
+```
+caret/
+├── components/
+│   ├── textEditor.js     # Text editor(core) — EditContext, undo/redo, highlighting
+│   ├── caret.js          # Custom caret positioning via Range API
+│   ├── lineCounter.js    # Line number display
+│   ├── font.js           # Custom font loading
+│   └── languages.js      # Highlight.js language registration
+├── .gitignore
+├── .npmignore
+├── index.js              # Main file
+├── LICENSE 
+├── logo.svg
+├── package-lock.json
+├── package.json
+├── package.json
+├── README.md
+└── utilities.js          # Shared utilities
+```
 
-Caret uses a clever layering technique:
+## Usage
 
-1. **Textarea Layer** - Handles user input and cursor management
-2. **Pre/Code Layer** - Displays syntax-highlighted code (overlay)
-3. **Custom Caret** - Renders a styled Caret in the correct position
-4. **Line Numbers** - Dynamically generated and synchronized
+### Basic Editor
 
-The editor synchronizes all layers during:
-- Typing (input events)
-- Scrolling (scroll events)
-- Navigation (click, keyup events)
+```javascript
+import { createEditor } from './node_modules/@pfmcodes/caret/index.js';
 
-### Performance
+const editor = await createEditor(
+  document.getElementById('editor'),  // parent element
+  'const x = 42;',                    // initial content
+  'my-editor',                         // unique id
+  {
+    dark: true,
+    language: 'javascript',
+    hlTheme: 'tokyo-night-dark'
+  }
+);
+```
 
-- **Real-time Highlighting**: Uses Highlight.js for fast, accurate syntax highlighting
-- **Canvas Measurement**: Employs HTML5 Canvas API for precise text width calculations
-- **Event Optimization**: Efficiently updates only what's necessary on each interaction
-- **Heavy Optimization**: v0.1.5 used to handle 500 lines before lagging, with new caret@0.2.0 and onwards, there's almost 20 times performance increase now it can handle 10K+ lines smoothly before lagging(better results in optimized browsers like firefox)
+### Read-Only Display
 
-### Browser Support
+```javascript
+import { createEditor } from './node_modules/@pfmcodes/caret/index.js';
 
-- Modern browsers with ES6+ support
-- Chrome, Firefox, Safari, Edge (latest versions)
-- Requires JavaScript modules support
+const editor = await createEditor(
+  document.getElementById('editor'),
+  code,
+  'readonly-editor',
+  {
+    dark: true,
+    language: 'python',
+    hlTheme: 'github-dark',
+    lock: true
+  }
+);
+```
+
+### Multiple Instances
+
+```javascript
+import { createEditor } from './node_modules/@pfmcodes/caret/index.js';
+
+// each editor needs a unique id
+
+const editor1 = await createEditor(el1, code1, 'editor-1', options);
+const editor2 = await createEditor(el2, code2, 'editor-2', options);
+```
+
+### Custom Theme
+
+```javascript
+import { createEditor } from './node_modules/@pfmcodes/caret/index.js';
+
+const editor = await createEditor(
+  document.getElementById('editor'),
+  code,
+  'editor-1',
+  {
+    dark: true,
+    language: 'javascript',
+    hlTheme: 'tokyo-night-dark',
+    focusColor: '#fff',
+    theme: {
+      dark: {
+        'background.editor': '#222',
+        'background.lineCounter': '#333',
+        'color.editor': '#d4d4d4',
+        'color.lineCounter': '#d4d4d4',
+        'editor.caret': '#37ff29'
+      },
+      light: {
+        'background.editor': '#cfd8f7',
+        'background.lineCounter': '#e2e7f9',
+        'color.editor': '#000',
+        'color.lineCounter': '#000',
+        'editor.caret': '#37ff29'
+      }
+    }
+  }
+);
+```
+
+### Custom Font
+
+```javascript
+import { createEditor } from './node_modules/@pfmcodes/caret/index.js';
+
+const editor = await createEditor(
+  document.getElementById('editor'),
+  code,
+  'editor-1',
+  {
+    dark: true,
+    language: 'javascript',
+    font: {
+      url: './fonts/FiraCode.ttf',
+      name: 'Fira Code'
+    }
+  }
+);
+```
+
+## API Reference
+
+### createEditor(parent, content, id, options)
+
+Creates a new editor instance.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `parent` | `HTMLElement` | ✅ | Container element |
+| `content` | `string` | ✅ | Initial content |
+| `options` | `object` | ✅ | Configuration |
+
+**Options:**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `dark` | `boolean` | `false` | Dark mode |
+| `shadow` | `boolean` | `true` | Box shadow |
+| `focusColor` | `string` | `#7c3aed` | Border color on focus |
+| `shadowColor` | `string` | `#000` | Shadow color |
+| `lock` | `boolean` | `false` | Read-only mode |
+| `language` | `string` | `plaintext` | Highlight.js language |
+| `hlTheme` | `string` | `hybrid` | Highlight.js theme |
+| `font` | `object` | — | Custom font `{ url, name }` |
+| `theme` | `object` | — | Custom colors (see above) |
+`id` | `string/number` | — | required, 
+
+**Returns:** `Promise<EditorInstance>`
+
+### EditorInstance Methods
+
+```javascript
+// Get current content
+const code = editor.getValue();
+
+// Set content
+editor.setValue('console.log("hello");');
+
+// Listen for changes
+editor.onChange((text) => {
+  console.log('content changed:', text);
+});
+
+// Check if focused
+const focused = editor.isFocused();
+
+// Switch language
+await editor.setLanguage('python');
+
+// Destroy instance and clean up
+editor.delete();
+```
+
+### Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Tab` | Indent (4 spaces) |
+| `Shift+Tab` | Unindent |
+| `Ctrl+Z` | Undo |
+| `Ctrl+Y` | Redo |
+| `Ctrl+Shift+Z` | Redo |
+
+### Global Undo/Redo Stack
+
+Each editor instance stores its undo/redo stack on `window.caret`:
+
+```javascript
+// access undo stack for a specific editor
+window.caret['undoStack.editor-1']; // array of { content, cursor }
+window.caret['redoStack.editor-1'];
+```
+
+## Customization
+
+### CSS Override
+
+```css
+/* editor container */
+#editor {
+  width: 900px;
+  height: 500px;
+  font-size: 16px;
+}
+
+/* line numbers */
+.lineCounter {
+  min-width: 40px;
+}
+
+.line-number {
+  padding: 0 8px;
+}
+```
+
+### Available hlTheme values
+
+**Dark:**
+- `atom-one-dark`
+- `monokai`
+- `night-owl`
+- `nord`
+- `tokyo-night-dark`
+- `vs2015`
+- `hybrid`
+- `github-dark`
+
+**Light:**
+- `github`
+- `atom-one-light`
+- `stackoverflow-light`
+- `xcode`
+
+## Browser Support
+
+| Browser | Support |
+|---------|---------|
+| Chrome / Chromium | Full support |
+| Edge | Full support |
+| Firefox | EditContext not yet supported |
+| Safari | EditContext not yet supported |
+
+Caret v0.4.0 uses the [EditContext API](https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API) which is currently only available in Chromium-based browsers. Firefox support is tracked [here](https://bugzilla.mozilla.org/show_bug.cgi?id=1850301).
+
+## Performance
+
+| Metric | Caret v0.4.0 | Monaco | CodeMirror 6 |
+|--------|-------------|--------|--------------|
+| Bundle size | **26KB** | ~5MB | ~400KB |
+| Load time | **~42ms** | ~2-3s | ~500ms |
+| Lines of code | **551** | ~300,000 | ~50,000 |
+| Architecture | EditContext | textarea | contenteditable |
+
+## How It Works
+
+Caret v0.4.0 uses Chrome's EditContext API to completely separate input handling from rendering:
+
+1. **EditContext** receives all keyboard input, IME, clipboard events
+2. **Text model** — a single string `text` is the source of truth
+3. **render()** — calls `hljs.highlight()` and sets `main.innerHTML`
+4. **Caret** — positioned via `Range.getBoundingClientRect()`, no canvas math
+5. **Undo/redo** — pure string operations stored in `window.caret`
+
+No dual-layer sync issues. No textarea fighting. No canvas measurements.
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps:
-
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/pfmcodes/lexius-editor.git
-
-# Navigate to the directory
-cd lexius-editor
-
-# Install dependencies
-npm install
-
-# Run development server (if applicable)
-npm run dev
-
-# Build the project
-npm run build
-```
-
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Performance Notes
-- Handles 10k+ lines smoothly in all browsers
-- Firefox DevTools can inspect up to 3M lines without breaking a sweat
-- Chrome DevTools politely requests you don't inspect past 300k lines
-
-## Acknowledgments
-
-- Built with modern JavaScript/TypeScript
-- Syntax highlighting powered by Highlight.js
-- Inspired by various text editor projects in the JavaScript ecosystem
-
-## Support
-
-- **Issues**: [GitHub Issues](https://github.com/pfmcodes/lexius-editor/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/pfmcodes/lexius-editor/discussions)
-
-## Links
-
-- [GitHub Repository](https://github.com/pfmcodes/lexius-editor)
-- [NPM Package](https://www.npmjs.com/package/@pfmcodes/caret) *(if published)*
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
