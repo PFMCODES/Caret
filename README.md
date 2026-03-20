@@ -37,7 +37,7 @@ A lightweight, fast code editor engine with real-time syntax highlighting, custo
 
 ## What's New
 
-### v0.4.0 — Complete Rewrite
+### v0.3.0 — Complete Rewrite
 - **Ditched textarea** — rebuilt on Chrome's EditContext API
 - **No more sync issues** — single text model, no dual layer fighting
 - **Undo/redo with cursor restoration** — cursor returns to exact position
@@ -565,11 +565,11 @@ window.caret['redoStack.editor-1'];
 | Firefox | EditContext not yet supported |
 | Safari | EditContext not yet supported |
 
-Caret v0.4.0 uses the [EditContext API](https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API) which is currently only available in Chromium-based browsers. Firefox support is tracked [here](https://bugzilla.mozilla.org/show_bug.cgi?id=1850301).
+Caret v0.3.0 uses the [EditContext API](https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API) which is currently only available in Chromium-based browsers. Firefox support is tracked [here](https://bugzilla.mozilla.org/show_bug.cgi?id=1850301).
 
 ## Performance
 
-| Metric | Caret v0.4.0 | Monaco | CodeMirror 6 |
+| Metric | Caret v0.3.0 | Monaco | CodeMirror 6 |
 |--------|-------------|--------|--------------|
 | Bundle size | **26KB** | ~5MB | ~400KB |
 | Load time | **~42ms** | ~2-3s | ~500ms |
@@ -578,7 +578,7 @@ Caret v0.4.0 uses the [EditContext API](https://developer.mozilla.org/en-US/docs
 
 ## How It Works
 
-Caret v0.4.0 uses Chrome's EditContext API to completely separate input handling from rendering:
+Caret v0.3.0 uses Chrome's EditContext API to completely separate input handling from rendering:
 
 1. **EditContext** receives all keyboard input, IME, clipboard events
 2. **Text model** — a single string `text` is the source of truth
